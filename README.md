@@ -1,6 +1,6 @@
 # Terra — Earth Data Explorer
 
-A local web application with two views of NASA Earth data. **Heat map** draws real satellite observations for a region and period. **Time series** shows how a variable changed over the years at a town or box in Romania, with its rate of change and whether that change is statistically significant. Python/FastAPI handles the NASA login, fetching and processing; Leaflet provides the interactive map. No forecast, synthetic demo data or gap filling is used. Time series also offer NASA model products, and every variable is labelled as a satellite measurement or a model product.
+A local web application with two views of NASA Earth data. **Heat map** draws real satellite observations for a region and period. **Time series** shows how a variable changed over the years at a city, county or box in Romania, with its rate of change and whether that change is statistically significant. Python/FastAPI handles the NASA login, fetching and processing; Leaflet provides the interactive map. No forecast, synthetic demo data or gap filling is used. Time series also offer NASA model products, and every variable is labelled as a satellite measurement or a model product.
 
 ## Run on this laptop
 

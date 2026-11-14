@@ -5,6 +5,8 @@
 const SVG = 'http://www.w3.org/2000/svg';
 let seriesVariables = [], seriesReason = null, seriesPlace = null, placeMarker = null, placeTimer = null, seriesTimer = null, seriesRun = 0;
 let variablesTimer = null, variablesRun = 0;
+let seriesChoice = null;   // the variable the visitor means; a new place or period may hide it but never swaps in another
+let placeListed = [];      // the places listed for the text as typed now; empty while a search is on its way
 
 function seriesStatus(title, message, state = '') {
   $('series-status-title').textContent = title;
@@ -25,9 +27,14 @@ $('mode-series').onclick = () => setMode('series');
 
 function describeVariable() {
   const select = $('series-variable'), v = seriesVariables.find(v => v.id === select.value);
-  if (!v) {   // nothing to choose: say why
-    $('series-variable-note').textContent = seriesReason || (select.options.length ? 'Your box is too large for these variables. Draw a smaller box.' :
-      seriesVariables.length ? 'No variable matches your search.' : 'No variable has data for this place and period.');
+  if (!v) {   // nothing is chosen: say why
+    const wanted = seriesVariables.find(v => v.id === seriesChoice), listed = [...select.options];
+    $('series-variable-note').textContent = seriesReason ? seriesReason :
+      !seriesVariables.length ? 'No variable has data for this place and period.' :
+      !listed.length ? 'No variable matches your search.' :
+      wanted && wanted.too_large ? 'Your box is too large for your variable. Draw a smaller box, or choose another variable.' :
+      listed.every(option => option.disabled) ? 'Your box is too large for these variables. Draw a smaller box.' :
+      'Your variable has no data for this place and period. Choose another one.';
     return;
   }
   const years = `${v.full_years} full year${v.full_years === 1 ? '' : 's'}${v.full_years < 10 ? ', too short for a trend' : ''}`;
@@ -56,8 +63,8 @@ function loadVariables() {
     }
   }, 300);
 }
-function showVariables() {
-  const text = $('series-filter').value.trim().toLowerCase(), chosen = $('series-variable').value, themes = new Map();
+function showVariables(searching = false) {
+  const text = $('series-filter').value.trim().toLowerCase(), themes = new Map();
   for (const v of seriesVariables) {
     if (text && !`${v.name} ${v.theme} ${v.id}`.toLowerCase().includes(text)) continue;
     if (!themes.has(v.theme)) themes.set(v.theme, []);
@@ -74,12 +81,15 @@ function showVariables() {
     }));
     return group;
   }));
-  const options = [...$('series-variable').options].filter(option => !option.disabled);
-  $('series-variable').value = options.some(option => option.value === chosen) ? chosen : options.length ? options[0].value : '';
+  const open = [...$('series-variable').options].filter(option => !option.disabled).map(option => option.value);
+  // The first listed variable is the start, and a search picks its first match. A new place or period does
+  // neither: it keeps the visitor's variable, or leaves the choice empty and says why.
+  if (open.length && (seriesChoice === null || (searching && !open.includes(seriesChoice)))) seriesChoice = open[0];
+  $('series-variable').value = open.includes(seriesChoice) ? seriesChoice : '';
   describeVariable();
 }
-$('series-filter').oninput = showVariables;
-$('series-variable').onchange = describeVariable;
+$('series-filter').oninput = () => showVariables(true);
+$('series-variable').onchange = () => { seriesChoice = $('series-variable').value; describeVariable(); };
 $('series-start').onchange = $('series-end').onchange = loadVariables;
 document.addEventListener('terra-box', () => {   // app.js says the box changed
   // A box made by hand (app.js names it 'Custom box') replaces the chosen city or county.
@@ -98,22 +108,25 @@ function forgetPlace() {
 }
 function placeLabel(place) { return place.kind === 'county' ? `${place.name} county` : `${place.name}, ${place.county}`; }
 function choosePlace(place) {
+  if (drawing) stopDrawing();   // a corner already clicked on the map must not turn a later click into a box
   forgetPlace();
   seriesPlace = place;
   $('place-search').value = placeLabel(place);
-  $('place-results').replaceChildren();
+  $('place-results').replaceChildren(); placeListed = [];
   if (place.kind === 'town') placeMarker = L.circleMarker([place.lat, place.lon], {radius: 7, color: '#244f46', weight: 2, fillColor: '#d5eaaa', fillOpacity: 0.9}).addTo(map);
   placeName = placeLabel(place);
   setBounds(place.bbox);   // a county is the box around its towns; a town gets half a degree around it for heat maps
 }
 $('place-search').oninput = () => {   // the chosen place stays until another one is picked
   clearTimeout(placeTimer);
+  placeListed = [];
   const text = $('place-search').value.trim();
   if (!text) { $('place-results').replaceChildren(); return; }
   placeTimer = setTimeout(async () => {
     try {
       const {places} = await api('/api/places?q=' + encodeURIComponent(text));
       if ($('place-search').value.trim() !== text) return;
+      placeListed = places;
       $('place-results').replaceChildren(...places.map(place => {
         const button = document.createElement('button');
         button.type = 'button'; button.onclick = () => choosePlace(place);
@@ -124,6 +137,13 @@ $('place-search').oninput = () => {   // the chosen place stays until another on
     } catch (error) { placeNote(error.message); }
   }, 250);
 };
+// Enter picks the first place listed for what is typed. Without this the browser would send the form, and a
+// heat map or a series would start for the place chosen before.
+$('place-search').addEventListener('keydown', event => {
+  if (event.key !== 'Enter') return;
+  event.preventDefault();
+  if (placeListed.length) choosePlace(placeListed[0]);
+});
 
 function part(name, attributes, text) {
   const node = document.createElementNS(SVG, name);

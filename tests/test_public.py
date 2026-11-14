@@ -101,6 +101,7 @@ def test_the_page_asks_for_place_then_period_then_variable_and_is_about_romania_
     page = (server.ROOT / "static" / "index.html").read_text()
     script = (server.ROOT / "static" / "app.js").read_text()
     assert page.index("Set your place") < page.index("Pick a time period") < page.index("Choose a variable")
+    assert "Choose a region, variable" not in page   # the status line names them in the new order too
     assert 'id="region"' not in page and 'id="place-search"' in page
     assert page.index('id="place-search"') < page.index('id="draw-button"') < page.index('id="west"')
     for elsewhere in ("California", "Amazon", "Alps", "california", "amazon", "alps"):

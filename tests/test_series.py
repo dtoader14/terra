@@ -123,4 +123,14 @@ def test_counties_are_found_with_a_box_around_their_towns():
     assert west <= seat["lon"] <= east and south <= seat["lat"] <= north and 1 < (east - west) * (north - south) < 2
     assert series.place("county:Cluj") == first and series.place("county:Nowhere") is None
     assert series.find_places("brasov")[0]["id"] == "county:Brașov"             # found without its diacritics
-    assert len(series.COUNTIES) == 42 and set(first) == set(seat)
+    assert len(series.COUNTIES) == 41 and set(first) == set(seat)
+
+
+def test_bucharest_is_offered_as_a_city_not_as_a_county():
+    # The place list files three entries under "Bucharest"; a box around them is a few kilometres wide
+    # with the city centre at its corner, and it used to be the first answer for the capital.
+    assert series.place("county:Bucharest") is None
+    assert len(series.COUNTIES) == 41
+    first = series.find_places("bucharest")[0]
+    assert (first["kind"], first["name"]) == ("town", "Bucharest")
+

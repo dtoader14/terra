@@ -56,6 +56,8 @@ def _places():
             extents[county] = (min(west, lon), min(south, lat), max(east, lon), max(north, lat))
     counties = {}
     for county, (west, south, east, north) in sorted(extents.items()):
+        if county == "Bucharest":   # a city, not a county: its three entries span a few kilometres. The town entry covers it.
+            continue
         counties[county] = places["county:" + county] = {
             "id": "county:" + county, "kind": "county", "name": county, "county": county, "lat": round((south + north) / 2, 4),
             "lon": round((west + east) / 2, 4), "population": None, "bbox": [west, south, east, north]}
