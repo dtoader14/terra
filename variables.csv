@@ -1,0 +1,355 @@
+id,name,theme,unit,unit_hint,source,kind,product,first_month,last_month,begin,end,dlat,dlon,plat,plon
+gio:AIRS3STM_7_0_CloudFrc_A,"Cloud Fraction (Daytime/Ascending, AIRS-only)",cloud,,no unit given,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_CloudFrc_D,"Cloud Fraction (Nighttime/Descending, AIRS-only)",cloud,,no unit given,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_CloudTopPres_A,"Cloud Top Pressure (Daytime/Ascending, AIRS-only)",cloud,hPa,hectopascals,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_CloudTopPres_D,"Cloud Top Pressure (Nightime/Descending, AIRS-only)",cloud,hPa,hectopascals,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_CloudTopTemp_A,"Cloud Top Temperature (Daytime/Ascending, AIRS-only)",cloud,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_CloudTopTemp_D,"Cloud Top Temperature (Nighttime/Descending, AIRS-only)",cloud,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_ClrOLR_A,"Outgoing Longwave Radiation Clear Sky (Daytime/Ascending, AIRS-only)",sunshine and radiation,W/m2,watts per square metre,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_ClrOLR_D,"Outgoing Longwave Radiation Clear Sky (Nighttime/Descending, AIRS-only)",sunshine and radiation,W/m2,watts per square metre,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_H2O_MMR_Surf_A,"Water Vapor Mass Mixing Ratio at Surface (Daytime/Ascending, AIRS-only)",humidity,gm/kg,grams of water vapour per kg of air,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_H2O_MMR_Surf_D,"Water Vapor Mass Mixing Ratio at Surface (Nighttime/Descending, AIRS-only)",humidity,gm/kg,grams of water vapour per kg of air,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_OLR_A,"Outgoing Longwave Radiation (Daytime/Ascending, AIRS-only)",sunshine and radiation,W/m2,watts per square metre,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_OLR_D,"Outgoing Longwave Radiation (Nighttime/Descending, AIRS-only)",sunshine and radiation,W/m2,watts per square metre,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_RelHumSurf_A,"Relative Humidity at Surface (Daytime/Ascending, AIRS-only)",humidity,percent,percent,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_RelHumSurf_D,"Relative Humidity at Surface (Nighttime/Descending, AIRS-only)",humidity,percent,percent,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_SurfAirTemp_A,"Air temperature at surface (Daytime/Ascending, AIRS-only)",temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_SurfAirTemp_D,"Air temperature at surface (Nightime/Descending, AIRS-only)",temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_SurfSkinTemp_A,"Surface Temperature (Daytime/Ascending, AIRS-only)",temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_SurfSkinTemp_D,"Surface Temperature (Nighttime/Descending, AIRS-only)",temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_TotH2OVap_A,"Total Column Water Vapor (Daytime/Ascending, AIRS-only)",humidity,kg/m2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_TotH2OVap_D,"Total Column Water Vapor (Nighttime/Descending, AIRS-only)",humidity,kg/m2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_TotO3_A,"Ozone Total Column (Daytime/Ascending, AIRS-only)",air quality,DU,Dobson units of gas in the air column,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_TotO3_D,"Ozone Total Column (Nighttime/Descending, AIRS-only)",air quality,DU,Dobson units of gas in the air column,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_TropHeight_A,"Tropopause Height (Daytime/Ascending, AIRS-only)",other,m,metres,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_TropHeight_D,"Tropopause Height (Nighttime/Descending, AIRS-only)",other,m,metres,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_TropPres_A,"Tropopause Pressure (Daytime/Ascending, AIRS-only)",pressure,hPa,hectopascals,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_TropPres_D,"Tropopause Pressure (Nighttime/Descending, AIRS-only)",pressure,hPa,hectopascals,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_TropTemp_A,"Tropopause Temperature (Daytime/Ascending, AIRS-only)",temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:AIRS3STM_7_0_TropTemp_D,"Tropopause Temperature (Nighttime/Descending, AIRS-only)",temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,satellite,AIRS3STM 7.0,2002-09,2026-10,2002-09-01,2026-10-31,1.0,1.0,0.5,0.5
+gio:FLDAS_NOAH01_C_GL_M_001_Evap_tavg,Total evapotranspiration,evaporation,kg m-2 s-1,per second; multiply by 86400 for mm per day,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_LWdown_f_tavg,Surface downward longwave radiation,sunshine and radiation,W m-2,watts per square metre,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_Lwnet_tavg,Net downward longwave radiation,sunshine and radiation,W m-2,watts per square metre,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_Psurf_f_tavg,Surface pressure,pressure,Pa,pascals; divide by 100 for hPa,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_Qair_f_tavg,Specific humidity,humidity,kg kg-1,multiply by 1000 for grams per kg,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_Qg_tavg,Soil heat flux,heat flux,W m-2,watts per square metre,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_Qh_tavg,Sensible heat flux,heat flux,W m-2,watts per square metre,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_Qle_tavg,Latent heat flux,evaporation,W m-2,watts per square metre,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_Qs_tavg,Surface runoff,water storage and runoff,kg m-2 s-1,per second; multiply by 86400 for mm per day,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_Qsb_tavg,Subsurface runoff,water storage and runoff,kg m-2 s-1,per second; multiply by 86400 for mm per day,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_RadT_tavg,Surface radiative temperature,temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_Rainf_f_tavg,Rainfall flux,rainfall,kg m-2 s-1,per second; multiply by 86400 for mm per day,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_SWE_inst,Snow water equivalent,snow,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_SWdown_f_tavg,Surface downward shortwave radiation,sunshine and radiation,W m-2,watts per square metre,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_SnowCover_inst,Snow cover,snow,fraction,a share from 0 to 1,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_SnowDepth_inst,Snow depth,snow,m,metres,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_Snowf_tavg,Snowfall rate,snow,kg m-2 s-1,per second; multiply by 86400 for mm per day,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_SoilMoi00_10cm_tavg,Soil moisture content (0 - 10 cm underground),soil moisture,m^3 m-3,volume of water per volume of soil (0 to 1),NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_SoilMoi100_200cm_tavg,Soil moisture content (100 - 200 cm underground),soil moisture,m^3 m-3,volume of water per volume of soil (0 to 1),NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_SoilMoi10_40cm_tavg,Soil moisture content (10 - 40 cm underground),soil moisture,m^3 m-3,volume of water per volume of soil (0 to 1),NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_SoilMoi40_100cm_tavg,Soil moisture content (40 - 100 cm underground),soil moisture,m^3 m-3,volume of water per volume of soil (0 to 1),NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_SoilTemp00_10cm_tavg,Soil temperature (0 - 10 cm underground),soil temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_SoilTemp100_200cm_tavg,Soil temperature (100 - 200 cm underground),soil temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_SoilTemp10_40cm_tavg,Soil temperature (10 - 40 cm underground),soil temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_SoilTemp40_100cm_tavg,Soil temperature (40 - 100 cm underground),soil temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_Swnet_tavg,Net downward shortwave radiation,sunshine and radiation,W m-2,watts per square metre,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_Tair_f_tavg,Surface air temperature,temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:FLDAS_NOAH01_C_GL_M_001_Wind_f_tavg,Near surface wind speed,wind,m s-1,metres per second,NASA Giovanni,model,FLDAS_NOAH01_C_GL_M 001,1982-01,2026-09,1982-01-01,2026-09-30,0.1,0.1,0.05,0.05
+gio:GLDAS_NOAH025_M_2_0_Albedo_inst,Albedo,sunshine and radiation,%,percent,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_AvgSurfT_inst,Average Surface Skin temperature,temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_CanopInt_inst,Plant canopy surface water,water storage and runoff,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_ECanop_tavg,Canopy water evaporation,evaporation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_ESoil_tavg,Direct Evaporation from Bare Soil,evaporation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Evap_tavg,Evapotranspiration,evaporation,kg m-2 s-1,per second; multiply by 86400 for mm per day,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_LWdown_f_tavg,Downward long-wave radiation flux,sunshine and radiation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Lwnet_tavg,Net long-wave radiation flux,sunshine and radiation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_PotEvap_tavg,Potential evaporation rate,evaporation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Psurf_f_inst,Surface pressure,pressure,Pa,pascals; divide by 100 for hPa,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Qair_f_inst,Specific humidity,humidity,kg kg-1,multiply by 1000 for grams per kg,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Qg_tavg,Ground heat flux,heat flux,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Qh_tavg,Sensible heat net flux,heat flux,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Qle_tavg,Latent heat net flux,evaporation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Qs_acc,Storm surface runoff,water storage and runoff,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Qsb_acc,Baseflow-groundwater runoff,water storage and runoff,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Qsm_acc,Snow melt,snow,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Rainf_f_tavg,Total precipitation rate,rainfall,kg m-2 s-1,per second; multiply by 86400 for mm per day,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Rainf_tavg,Rain precipitation rate,rainfall,kg m-2 s-1,per second; multiply by 86400 for mm per day,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_RootMoist_inst,Root zone soil moisture,soil moisture,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_SWE_inst,Snow depth water equivalent,snow,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_SWdown_f_tavg,Downward short-wave radiation flux,sunshine and radiation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_SnowDepth_inst,Snow depth,snow,m,metres,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Snowf_tavg,Snow precipitation rate,snow,kg m-2 s-1,per second; multiply by 86400 for mm per day,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_SoilMoi0_10cm_inst,Soil moisture content (0 - 10 cm underground),soil moisture,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_SoilMoi100_200cm_inst,Soil moisture content (100 - 200 cm underground),soil moisture,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_SoilMoi10_40cm_inst,Soil moisture content (10 - 40 cm underground),soil moisture,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_SoilMoi40_100cm_inst,Soil moisture content (40 - 100 cm underground),soil moisture,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_SoilTMP0_10cm_inst,Soil temperature (0 - 10 cm underground),soil temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_SoilTMP100_200cm_inst,Soil temperature (100 - 200 cm underground),soil temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_SoilTMP10_40cm_inst,Soil temperature (10 - 40 cm underground),soil temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_SoilTMP40_100cm_inst,Soil temperature (40 -100 cm underground),soil temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Swnet_tavg,Net short wave radiation flux,sunshine and radiation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Tair_f_inst,Near surface air temperature,temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Tveg_tavg,Transpiration,evaporation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_0_Wind_f_inst,Near surface wind speed,wind,m s-1,metres per second,NASA Giovanni,model,GLDAS_NOAH025_M 2.0,1948-01,2014-12,1948-01-01,2014-12-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Albedo_inst,Albedo,sunshine and radiation,%,percent,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_AvgSurfT_inst,Average surface skin temperature,temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_CanopInt_inst,Plant canopy surface water,water storage and runoff,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_ECanop_tavg,Canopy water evaporation,evaporation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_ESoil_tavg,Direct evaporation from bare soil,evaporation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Evap_tavg,Evapotranspiration,evaporation,kg m-2 s-1,per second; multiply by 86400 for mm per day,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_LWdown_f_tavg,Downward longwave radiation flux,sunshine and radiation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Lwnet_tavg,Net longwave radiation flux,sunshine and radiation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_PotEvap_tavg,Potential evaporation rate,evaporation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Psurf_f_inst,Surface air pressure,pressure,Pa,pascals; divide by 100 for hPa,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Qair_f_inst,Specific humidity,humidity,kg kg-1,multiply by 1000 for grams per kg,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Qg_tavg,Ground heat flux,heat flux,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Qh_tavg,Sensible heat net flux,heat flux,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Qle_tavg,Latent heat net flux,evaporation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Qs_acc,Storm surface runoff,water storage and runoff,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Qsb_acc,Baseflow-groundwater runoff,water storage and runoff,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Qsm_acc,Snow melt,snow,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Rainf_f_tavg,Total precipitation rate,rainfall,kg m-2 s-1,per second; multiply by 86400 for mm per day,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Rainf_tavg,Rain precipitation rate,rainfall,kg m-2 s-1,per second; multiply by 86400 for mm per day,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_RootMoist_inst,Root zone soil moisture,soil moisture,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_SWE_inst,Snow depth water equivalent,snow,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_SWdown_f_tavg,Downward shortwave radiation flux,sunshine and radiation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_SnowDepth_inst,Snow depth,snow,m,metres,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Snowf_tavg,Snow precipitation rate,snow,kg m-2 s-1,per second; multiply by 86400 for mm per day,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_SoilMoi0_10cm_inst,Soil moisture content (0 - 10 cm underground),soil moisture,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_SoilMoi100_200cm_inst,Soil moisture content (100 - 200 cm underground),soil moisture,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_SoilMoi10_40cm_inst,Soil moisture content (10 - 40 cm underground),soil moisture,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_SoilMoi40_100cm_inst,Soil moisture content (40 - 100 cm underground),soil moisture,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_SoilTMP0_10cm_inst,Soil temperature (0 - 10 cm underground),soil temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_SoilTMP100_200cm_inst,Soil temperature (100 - 200 cm underground),soil temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_SoilTMP10_40cm_inst,Soil temperature (10 - 40 cm underground),soil temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_SoilTMP40_100cm_inst,Soil temperature (40 - 100 cm underground),soil temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Swnet_tavg,Net shortwave radiation flux,sunshine and radiation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Tair_f_inst,Near surface air temperature,temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Tveg_tavg,Transpiration,evaporation,W m-2,watts per square metre,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GLDAS_NOAH025_M_2_1_Wind_f_inst,Near surface wind speed,wind,m s-1,metres per second,NASA Giovanni,model,GLDAS_NOAH025_M 2.1,2000-01,2026-07,2000-01-01,2026-07-31,0.25,0.25,0.125,0.125
+gio:GPM_3IMERGM_07_precipitation,Merged satellite-gauge precipitation estimate - Final Run (recommended for general use),rainfall,mm/hr,multiply by 24 for mm per day,NASA Giovanni,satellite,GPM_3IMERGM 07,1998-01,2025-09,1998-01-01,2025-09-30,0.1,0.1,0.05,0.05
+gio:GPM_3IMERGM_07_precipitationQualityIndex,Quality Index for precipitation field - Final Run,rainfall,Equivalent gauges per 2.5 deg box,,NASA Giovanni,satellite,GPM_3IMERGM 07,1998-01,2025-09,1998-01-01,2025-09-30,0.1,0.1,0.05,0.05
+gio:GPM_3IMERGM_07_probabilityLiquidPrecipitation,Accumulation-weighted probability of liquid phase - Final Run,rainfall,percent,percent,NASA Giovanni,satellite,GPM_3IMERGM 07,1998-01,2025-09,1998-01-01,2025-09-30,0.1,0.1,0.05,0.05
+gio:GPM_3IMERGM_07_randomError,Random error for merged satellite-gauge precipitation - Final Run,rainfall,mm/hr,multiply by 24 for mm per day,NASA Giovanni,satellite,GPM_3IMERGM 07,1998-01,2025-09,1998-01-01,2025-09-30,0.1,0.1,0.05,0.05
+gio:M2IMNXASM_5_12_4_DISPH,Zero plane displacement height,other,m,metres,NASA Giovanni,model,M2IMNXASM 5.12.4,1980-01,2026-09,1980-01-01,2026-09-30,0.5,0.625,0.0,0.0
+gio:M2IMNXASM_5_12_4_QV10M,10-meter specific humidity,humidity,kg kg-1,multiply by 1000 for grams per kg,NASA Giovanni,model,M2IMNXASM 5.12.4,1980-01,2026-09,1980-01-01,2026-09-30,0.5,0.625,0.0,0.0
+gio:M2IMNXASM_5_12_4_QV2M,2-meter specific humidity,humidity,kg kg-1,multiply by 1000 for grams per kg,NASA Giovanni,model,M2IMNXASM 5.12.4,1980-01,2026-09,1980-01-01,2026-09-30,0.5,0.625,0.0,0.0
+gio:M2IMNXASM_5_12_4_T10M,10-meter air temperature,temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,M2IMNXASM 5.12.4,1980-01,2026-09,1980-01-01,2026-09-30,0.5,0.625,0.0,0.0
+gio:M2IMNXASM_5_12_4_T2M,2-meter air temperature,temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,M2IMNXASM 5.12.4,1980-01,2026-09,1980-01-01,2026-09-30,0.5,0.625,0.0,0.0
+gio:M2IMNXASM_5_12_4_TO3,Total column ozone,air quality,Dobsons,Dobson units of gas in the air column,NASA Giovanni,model,M2IMNXASM 5.12.4,1980-01,2026-09,1980-01-01,2026-09-30,0.5,0.625,0.0,0.0
+gio:M2IMNXASM_5_12_4_TROPQ,Tropopause specific humidity using blended TROPP estimate,humidity,kg kg-1,multiply by 1000 for grams per kg,NASA Giovanni,model,M2IMNXASM 5.12.4,1980-01,2026-09,1980-01-01,2026-09-30,0.5,0.625,0.0,0.0
+gio:M2IMNXASM_5_12_4_TROPT,Tropopause temperature using blended TROPP estimate,temperature,K,kelvin; subtract 273.15 for degrees C,NASA Giovanni,model,M2IMNXASM 5.12.4,1980-01,2026-09,1980-01-01,2026-09-30,0.5,0.625,0.0,0.0
+gio:TRMM_3B43_7_precipitation,Precipitation Rate,rainfall,mm/hr,multiply by 24 for mm per day,NASA Giovanni,satellite,TRMM_3B43 7,1998-01,2019-12,1998-01-01,2019-12-31,0.25,0.25,0.125,0.125
+power:AIRMASS,Air Mass,other,dimensionless,no unit (a ratio or index),NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_KT,All Sky Insolation Clearness Index,sunshine and radiation,dimensionless,no unit (a ratio or index),NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_KT_MAX,All Sky Insolation Clearness Index Maximum,sunshine and radiation,dimensionless,no unit (a ratio or index),NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_KT_MIN,All Sky Insolation Clearness Index Minimum,sunshine and radiation,dimensionless,no unit (a ratio or index),NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_KT_SD,All Sky Insolation Clearness Index Standard Deviation,sunshine and radiation,dimensionless,no unit (a ratio or index),NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_LW_DWN,All Sky Surface Longwave Downward Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_LW_DWN_MAX,All Sky Surface Longwave Downward Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_LW_DWN_MIN,All Sky Surface Longwave Downward Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_LW_DWN_SD,All Sky Surface Longwave Downward Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_LW_UP,All Sky Surface Longwave Upward Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_LW_UP_MAX,All Sky Surface Longwave Upward Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_LW_UP_MIN,All Sky Surface Longwave Upward Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_LW_UP_SD,All Sky Surface Longwave Upward Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_PAR_DIFF,All Sky Surface Diffuse PAR,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_PAR_DIFF_MAX,All Sky Surface Diffuse PAR Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_PAR_DIFF_MIN,All Sky Surface Diffuse PAR Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_PAR_DIFF_SD,All Sky Surface Diffuse PAR Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_PAR_DIRH,All Sky Surface Direct Horizontal PAR,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_PAR_DIRH_MAX,All Sky Surface Direct Horizontal PAR Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_PAR_DIRH_MIN,All Sky Surface Direct Horizontal PAR Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_PAR_DIRH_SD,All Sky Surface Direct Horizontal PAR Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_PAR_TOT,All Sky Surface Total PAR,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_PAR_TOT_MAX,All Sky Surface Total PAR Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_PAR_TOT_MIN,All Sky Surface Total PAR Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_PAR_TOT_SD,All Sky Surface Total PAR Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DIFF,All Sky Surface Shortwave Diffuse Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DIFF_MAX,All Sky Surface Shortwave Diffuse Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DIFF_MIN,All Sky Surface Shortwave Diffuse Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DIFF_SD,All Sky Surface Shortwave Diffuse Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DIRH,All Sky Surface Shortwave Direct Horizontal Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DIRH_MAX,All Sky Surface Shortwave Direct Horizontal Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DIRH_MIN,All Sky Surface Shortwave Direct Horizontal Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DIRH_SD,All Sky Surface Shortwave Direct Horizontal Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DNI,All Sky Surface Shortwave Downward Direct Normal Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DNI_MAX,All Sky Surface Shortwave Downward Direct Normal Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DNI_MIN,All Sky Surface Shortwave Downward Direct Normal Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DNI_SD,All Sky Surface Shortwave Downward Direct Normal Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DWN,All Sky Surface Shortwave Downward Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DWN_MAX,All Sky Surface Shortwave Downward Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DWN_MIN,All Sky Surface Shortwave Downward Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_DWN_SD,All Sky Surface Shortwave Downward Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_UP,All Sky Surface Shortwave Upward Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_UP_MAX,All Sky Surface Shortwave Upward Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_UP_MIN,All Sky Surface Shortwave Upward Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_SW_UP_SD,All Sky Surface Shortwave Upward Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_UVA,All Sky Surface UVA Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_UVA_MAX,All Sky Surface UVA Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_UVA_MIN,All Sky Surface UVA Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_UVA_SD,All Sky Surface UVA Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_UVB,All Sky Surface UVB Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_UVB_MAX,All Sky Surface UVB Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_UVB_MIN,All Sky Surface UVB Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_UVB_SD,All Sky Surface UVB Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_UV_INDEX,All Sky Surface UV Index,sunshine and radiation,W m-2 x 40,,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_UV_INDEX_MAX,All Sky Surface UV Index Maximum,sunshine and radiation,W m-2 x 40,,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_UV_INDEX_MIN,All Sky Surface UV Index Minimum,sunshine and radiation,W m-2 x 40,,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SFC_UV_INDEX_SD,All Sky Surface UV Index Standard Deviation,sunshine and radiation,W m-2 x 40,,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:ALLSKY_SRF_ALB,All Sky Surface Albedo,sunshine and radiation,dimensionless,no unit (a ratio or index),NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:AOD_55_ADJ,Adjusted Aerosol Optical Depth 55,air quality,dimensionless,no unit (a ratio or index),NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CDD0,Cooling Degree Days Above 0 C,temperature,degree-day-c,"degree days, in degrees C",NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:CDD10,Cooling Degree Days Above 10 C,temperature,degree-day-c,"degree days, in degrees C",NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:CDD18_3,Cooling Degree Days Above 18.3 C,temperature,degree-day-c,"degree days, in degrees C",NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:CLOUD_AMT,Cloud Amount,cloud,%,percent,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLOUD_AMT_DAY,Cloud Amount at Daytime,cloud,%,percent,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLOUD_AMT_NIGHT,Cloud Amount at Nighttime,cloud,%,percent,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLOUD_OD,Cloud Optical Visible Depth,cloud,dimensionless,no unit (a ratio or index),NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_DAYS,Clear Sky Days,sunshine and radiation,Days,number of days,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_KT,Clear Sky Insolation Clearness Index,sunshine and radiation,dimensionless,no unit (a ratio or index),NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_KT_MAX,Clear Sky Insolation Clearness Index Maximum,sunshine and radiation,dimensionless,no unit (a ratio or index),NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_KT_MIN,Clear Sky Insolation Clearness Index Minimum,sunshine and radiation,dimensionless,no unit (a ratio or index),NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_KT_SD,Clear Sky Insolation Clearness Index Standard Deviation,sunshine and radiation,dimensionless,no unit (a ratio or index),NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_LW_DWN,Clear Sky Surface Longwave Downward Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_LW_DWN_MAX,Clear Sky Surface Longwave Downward Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_LW_DWN_MIN,Clear Sky Surface Longwave Downward Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_LW_DWN_SD,Clear Sky Surface Longwave Downward Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_LW_UP,Clear Sky Surface Longwave Upward Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_LW_UP_MAX,Clear Sky Surface Longwave Upward Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_LW_UP_MIN,Clear Sky Surface Longwave Upward Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_LW_UP_SD,Clear Sky Surface Longwave Upward Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_PAR_DIFF,Clear Sky Surface Diffuse PAR,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_PAR_DIFF_MAX,Clear Sky Surface Diffuse PAR Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_PAR_DIFF_MIN,Clear Sky Surface Diffuse PAR Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_PAR_DIFF_SD,Clear Sky Surface Diffuse PAR Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_PAR_DIRH,Clear Sky Surface Direct Horizontal PAR,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_PAR_DIRH_MAX,Clear Sky Surface Direct Horizontal PAR Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_PAR_DIRH_MIN,Clear Sky Surface Direct Horizontal PAR Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_PAR_DIRH_SD,Clear Sky Surface Direct Horizontal PAR Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_PAR_TOT,Clear Sky Surface Total PAR,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_PAR_TOT_MAX,Clear Sky Surface Total PAR Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_PAR_TOT_MIN,Clear Sky Surface Total PAR Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_PAR_TOT_SD,Clear Sky Surface Total PAR Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DIFF,Clear Sky Surface Shortwave Downward Diffuse Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DIFF_MAX,Clear Sky Surface Shortwave Downward Diffuse Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DIFF_MIN,Clear Sky Surface Shortwave Downward Diffuse Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DIFF_SD,Clear Sky Surface Shortwave Downward Diffuse Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DIRH,Clear Sky Surface Shortwave Direct Horizontal Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DIRH_MAX,Clear Sky Surface Shortwave Direct Horizontal Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DIRH_MIN,Clear Sky Surface Shortwave Direct Horizontal Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DIRH_SD,Clear Sky Surface Shortwave Direct Horizontal Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DNI,Clear Sky Surface Shortwave Downward Direct Normal Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DNI_MAX,Clear Sky Surface Shortwave Downward Direct Normal Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DNI_MIN,Clear Sky Surface Shortwave Downward Direct Normal Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DNI_SD,Clear Sky Surface Shortwave Downward Direct Normal Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DWN,Clear Sky Surface Shortwave Downward Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DWN_MAX,Clear Sky Surface Shortwave Downward Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DWN_MIN,Clear Sky Surface Shortwave Downward Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_DWN_SD,Clear Sky Surface Shortwave Downward Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_UP,Clear Sky Surface Shortwave Upward Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_UP_MAX,Clear Sky Surface Shortwave Upward Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_UP_MIN,Clear Sky Surface Shortwave Upward Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SFC_SW_UP_SD,Clear Sky Surface Shortwave Upward Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:CLRSKY_SRF_ALB,Clear Sky Surface Albedo,sunshine and radiation,dimensionless,no unit (a ratio or index),NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:DISPH,Zero Plane Displacement Height,other,m,metres,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:EVLAND,Evaporation Land,evaporation,mm/day,millimetres per day,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:EVPTRNS,Evapotranspiration Energy Flux,evaporation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:FROST_DAYS,Frost Days,temperature,Days,number of days,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:FRSEAICE,Ice Covered Fraction,other,1,no unit (a ratio or index),NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:FRSNO,Land Snowcover Fraction,snow,1,no unit (a ratio or index),NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:GWETPROF,Profile Soil Moisture,soil moisture,1,no unit (a ratio or index),NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:GWETROOT,Root Zone Soil Wetness,soil moisture,1,no unit (a ratio or index),NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:GWETTOP,Surface Soil Wetness,soil moisture,1,no unit (a ratio or index),NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:HDD0,Heating Degree Days Below 0 C,temperature,degree-day-c,"degree days, in degrees C",NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:HDD10,Heating Degree Days Below 10 C,temperature,degree-day-c,"degree days, in degrees C",NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:HDD18_3,Heating Degree Days Below 18.3 C,temperature,degree-day-c,"degree days, in degrees C",NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:MIDDAY_INSOL,Midday Insolation Incident,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:MIDDAY_INSOL_MAX,Midday Insolation Incident Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:MIDDAY_INSOL_MIN,Midday Insolation Incident Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:MIDDAY_INSOL_SD,Midday Insolation Incident Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:PBLTOP,Planetary Boundary Layer Top Pressure,pressure,kPa,kilopascals; multiply by 10 for hPa,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:PRECSNO,Snow Precipitation,snow,mm/day,millimetres per day,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:PRECSNOLAND,Snow Precipitation Land,snow,mm/day,millimetres per day,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:PRECSNOLAND_SUM,Snow Precipitation Land Sum,snow,mm/day,millimetres per day,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:PRECTOTCORR,Precipitation Corrected,rainfall,mm/day,millimetres per day,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:PRECTOTCORR_SUM,Precipitation Corrected Sum,rainfall,mm/day,millimetres per day,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:PS,Surface Pressure,pressure,kPa,kilopascals; multiply by 10 for hPa,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:PSH,Peak Sun Hour,other,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:PW,Precipitable Water,humidity,cm,centimetres,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:QV10M,Specific Humidity at 10 Meters,humidity,g/kg,grams of water vapour per kg of air,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:QV2M,Specific Humidity at 2 Meters,humidity,g/kg,grams of water vapour per kg of air,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:RH2M,Relative Humidity at 2 Meters,humidity,%,percent,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:RHOA,Surface Air Density,other,kg m-3,kilograms per cubic metre,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:SLP,Sea Level Pressure,pressure,kPa,kilopascals; multiply by 10 for hPa,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:SNODP,Snow Depth,snow,cm,centimetres,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:SRF_ALB_ADJ,Surface Albedo Adjusted,sunshine and radiation,dimensionless,no unit (a ratio or index),NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:T10M,Temperature at 10 Meters,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:T10M_MAX,Temperature at 10 Meters Maximum,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:T10M_MAX_AVG,Temperature at 10 Meters Maximum Average,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:T10M_MIN,Temperature at 10 Meters Minimum,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:T10M_MIN_AVG,Temperature at 10 Meters Minimum Average,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:T10M_RANGE,Temperature at 10 Meters Range,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:T2M,Temperature at 2 Meters,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:T2MDEW,Dew/Frost Point at 2 Meters,humidity,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:T2MWET,Wet Bulb Temperature at 2 Meters,humidity,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:T2M_MAX,Temperature at 2 Meters Maximum,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:T2M_MAX_AVG,Temperature at 2 Meters Maximum Average,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:T2M_MIN,Temperature at 2 Meters Minimum,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:T2M_MIN_AVG,Temperature at 2 Meters Minimum Average,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:T2M_RANGE,Temperature at 2 Meters Range,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TO3,Total Column Ozone,air quality,Dobsons,Dobson units of gas in the air column,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TOA_SW_DNI,Top-Of-Atmosphere Shortwave Direct Normal Radiation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:TOA_SW_DNI_MAX,Top-Of-Atmosphere Shortwave Direct Normal Radiation Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:TOA_SW_DNI_MIN,Top-Of-Atmosphere Shortwave Direct Normal Radiation Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:TOA_SW_DNI_SD,Top-Of-Atmosphere Shortwave Direct Normal Radiation Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:TOA_SW_DWN,Top-Of-Atmosphere Shortwave Downward Irradiance,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:TOA_SW_DWN_MAX,Top-Of-Atmosphere Shortwave Downward Irradiance Maximum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:TOA_SW_DWN_MIN,Top-Of-Atmosphere Shortwave Downward Irradiance Minimum,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:TOA_SW_DWN_SD,Top-Of-Atmosphere Shortwave Downward Irradiance Standard Deviation,sunshine and radiation,MJ/m^2/day,megajoules of energy per square metre per day,NASA POWER,satellite,POWER,1984-01,2025-12,,,1.0,1.0,0.5,0.5
+power:TQV,Total Column Precipitable Water,humidity,kg m-2,"kilograms of water per square metre, the same as mm of water",NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TROPPB,Tropopause Pressure based on blended estimate.,pressure,kPa,kilopascals; multiply by 10 for hPa,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TROPQ,Tropopause Specific Humidity using blended TROPP estimate.,humidity,g/kg,grams of water vapour per kg of air,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TROPT,Tropopause Temperature using blended TROPP estimate.,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TS,Earth Skin Temperature,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TSOIL1,Soil Temperatures Layer 1,soil temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TSOIL2,Soil Temperatures Layer 2,soil temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TSOIL3,Soil Temperatures Layer 3,soil temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TSOIL4,Soil Temperatures Layer 4,soil temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TSOIL5,Soil Temperatures Layer 5,soil temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TSOIL6,Soil Temperatures Layer 6,soil temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TSURF,Surface Temperature of Land and Snow,snow,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TS_ADJ,Earth Skin Temperature Adjusted,temperature,C,degrees C,NASA POWER,satellite,POWER,2001-01,2025-12,,,1.0,1.0,0.5,0.5
+power:TS_MAX,Earth Skin Temperature Maximum,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TS_MAX_AVG,Earth Skin Temperature Maximum Average,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TS_MIN,Earth Skin Temperature Minimum,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TS_MIN_AVG,Earth Skin Temperature Minimum Average,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:TS_RANGE,Earth Skin Temperature Range,temperature,C,degrees C,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:U10M,Eastward Wind at 10 Meters,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:U2M,Eastward Wind at 2 Meters,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:U50M,Eastward Wind at 50 Meters,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:V10M,Northward Wind at 10 Meters,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:V2M,Northward Wind at 2 Meters,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:V50M,Northward Wind at 50 Meters,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WD10M,Wind Direction at 10 Meters,wind,Degrees,degrees of angle,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WD2M,Wind Direction at 2 Meters,wind,Degrees,degrees of angle,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WD50M,Wind Direction at 50 Meters,wind,Degrees,degrees of angle,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS10M,Wind Speed at 10 Meters,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS10M_MAX,Wind Speed at 10 Meters Maximum,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS10M_MAX_AVG,Wind Speed at 10 Meters Maximum Average,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS10M_MIN,Wind Speed at 10 Meters Minimum,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS10M_MIN_AVG,Wind Speed at 10 Meters Minimum Average,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS10M_RANGE,Wind Speed at 10 Meters Range,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS2M,Wind Speed at 2 Meters,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS2M_MAX,Wind Speed at 2 Meters Maximum,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS2M_MAX_AVG,Wind Speed at 2 Meters Maximum Average,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS2M_MIN,Wind Speed at 2 Meters Minimum,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS2M_MIN_AVG,Wind Speed at 2 Meters Minimum Average,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS2M_RANGE,Wind Speed at 2 Meters Range,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS50M,Wind Speed at 50 Meters,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS50M_MAX,Wind Speed at 50 Meters Maximum,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS50M_MAX_AVG,Wind Speed at 50 Meters Maximum Average,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS50M_MIN,Wind Speed at 50 Meters Minimum,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS50M_MIN_AVG,Wind Speed at 50 Meters Minimum Average,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:WS50M_RANGE,Wind Speed at 50 Meters Range,wind,m/s,metres per second,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0
+power:Z0M,Surface Roughness,other,m,metres,NASA POWER,model,POWER,1981-01,2025-12,,,0.5,0.625,0.0,0.0

@@ -77,3 +77,33 @@ def test_mann_kendall():
     assert series.mann_kendall(list(range(20))) == pytest.approx(8.679762763e-10, rel=1e-6)
     assert series.mann_kendall([1, 1, 2, 2, 3, 3, 4, 4, 5, 5]) == pytest.approx(3.7057721e-4, rel=1e-6)   # ties
     assert series.mann_kendall([3, 3, 3, 3]) == 1.0
+
+
+def test_variable_list():
+    assert len(series.VARIABLES) == 354
+    dew = series.VARIABLES["power:T2MDEW"]
+    assert dew["name"] == "Dew/Frost Point at 2 Meters" and dew["kind"] == "model" and dew["grid"] == GM
+    air = series.VARIABLES["gio:AIRS3STM_7_0_SurfAirTemp_A"]
+    assert air["kind"] == "satellite" and air["grid"] == G1 and air["unit"] == "K" and air["begin"] == "2002-09-01"
+    assert series.VARIABLES["power:ALLSKY_SFC_SW_DWN"]["kind"] == "satellite"
+    assert series.VARIABLES["gio:GPM_3IMERGM_07_precipitation"]["grid"] == G01
+    public = series.public_variable(dew)
+    assert public["grid"] == "0.5 x 0.625 degree" and "begin" not in public and series.grid_label(G1) == "1 x 1 degree"
+
+
+def test_places():
+    for q in ("alba-iulia", "Alba Iulia", "ALBA IULIA", "alba iu"):
+        assert series.find_places(q)[0]["name"] == "Alba Iulia"
+    alba = series.find_places("Alba Iulia")[0]
+    assert alba["county"] == "Alba" and abs(alba["lat"] - 46.07) < 0.1 and abs(alba["lon"] - 23.58) < 0.1
+    assert set(alba) == {"id", "name", "county", "lat", "lon", "population"}
+    assert series.find_places("pitesti")[0]["name"] in ("Pitești", "Piteşti")          # comma-below or cedilla, as GeoNames spells it
+    assert len({p["county"] for p in series.find_places("mihai viteazu", 25)}) > 1   # villages sharing a name
+    assert series.place(alba["id"]) == alba and series.place("nope") is None
+
+
+def test_odd_place_text():
+    assert series.find_places("") == [] and series.find_places("   ") == [] and series.find_places("x" * 500) == []
+    assert len(series.find_places("a", 3)) == 3
+    assert len(series.find_places("a", 0)) == 1 and len(series.find_places("a", 999)) == 25
+    assert series.find_places("zzzzqq") == []

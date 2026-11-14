@@ -1,14 +1,76 @@
-"""Time series for Romania: grid cells, area-weighted averages, yearly means and linear trend."""
+"""Time series for Romania: the offered variables, town lookup, grid cells, area-weighted averages and linear trend."""
+import csv
 import math
+import unicodedata
 from collections import namedtuple
+from pathlib import Path
 
 import numpy as np
 from scipy import stats
 
+HERE = Path(__file__).resolve().parent
 ROMANIA = (20.2, 43.6, 29.7, 48.3)  # west, south, east, north
 Grid = namedtuple("Grid", "dlat dlon plat plon")  # cell size and phase: a centre is phase + k * size
 EPS = 1e-9
 TOO_SHORT = "Fewer than 10 complete years in this period."
+PUBLIC_FIELDS = ("id", "name", "theme", "unit", "unit_hint", "source", "kind", "product", "first_month", "last_month")
+
+
+def grid_label(grid):
+    return f"{grid.dlat:g} x {grid.dlon:g} degree"
+
+
+def _variables():
+    with open(HERE / "variables.csv", encoding="utf-8", newline="") as stream:
+        return {row["id"]: {**{key: row[key] for key in PUBLIC_FIELDS + ("begin", "end")},
+                            "grid": Grid(*(float(row[key]) for key in Grid._fields))} for row in csv.DictReader(stream)}
+
+
+VARIABLES = _variables()
+
+
+def public_variable(variable):
+    return {**{key: variable[key] for key in PUBLIC_FIELDS}, "grid": grid_label(variable["grid"])}
+
+
+def _plain(text):
+    """Lower case, no diacritics, hyphens as spaces: 'Alba-Iulia' and 'ALBA IULIA' compare equal."""
+    text = unicodedata.normalize("NFKD", text.lower())
+    return " ".join("".join(c for c in text if not unicodedata.combining(c)).replace("-", " ").split())
+
+
+def _places():
+    places, names = {}, []
+    with open(HERE / "places.tsv", encoding="utf-8") as stream:
+        next(stream)
+        for line in stream:  # already ordered by population, largest first
+            pid, name, ascii_name, alt, county, lat, lon, population = line.rstrip("\n").split("\t")
+            places[pid] = {"id": pid, "name": name, "county": county, "lat": float(lat), "lon": float(lon), "population": int(population)}
+            names.append((pid, {_plain(n) for n in (name, ascii_name, *alt.split(","))} - {""}))
+    return places, names
+
+
+PLACES, _NAMES = _places()
+
+
+def find_places(q, limit=10):
+    """Towns whose name starts with q, then towns whose name contains it; larger towns first."""
+    q, limit = _plain(q), min(max(limit, 1), 25)
+    if not q or len(q) > 80:
+        return []
+    starts, contains = [], []
+    for pid, names in _NAMES:
+        if any(name.startswith(q) for name in names):
+            starts.append(pid)
+            if len(starts) == limit:
+                break
+        elif len(contains) < limit and any(q in name for name in names):
+            contains.append(pid)
+    return [PLACES[pid] for pid in (starts + contains)[:limit]]
+
+
+def place(pid):
+    return PLACES.get(pid)
 
 
 def clip(bbox):
