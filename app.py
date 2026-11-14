@@ -12,6 +12,9 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, SecretStr, model_validator
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+import fetching
+import series
+import sources
 from nasa import VARIABLES, NasaClient, NasaError, task_payload
 from processing import process_bundle
 from platform_settings import Settings, utc_now
@@ -316,6 +319,22 @@ def get_file(job_id: str, name: str, request: Request, download: bool = False):
     if name not in allowed:
         raise HTTPException(404, "File not found.")
     return FileResponse(DATA / job_id / name, filename=f"earth-{job['query']['variable']}-{name}" if download else None)
+
+
+@app.get("/api/series/variables")
+def series_variables():
+    return {"variables": [series.public_variable(v) for v in series.VARIABLES.values()]}
+
+
+@app.get("/api/places")
+def places(q: str = "", limit: int = 10):
+    return {"places": series.find_places(q, limit)}
+
+
+@app.get("/api/series")
+def get_series(response: Response, variable: str, bbox: str | None = None, place: str | None = None, start: str | None = None, end: str | None = None):
+    response.status_code, body = fetching.answer(variable, bbox, place, start, end)
+    return body
 
 
 @app.get("/admin", include_in_schema=False)
