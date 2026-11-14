@@ -73,11 +73,35 @@ function updateService(provider){
 $('about-button').onclick=()=>$('about-dialog').showModal();
 $('method-button').onclick=()=>$('about-dialog').showModal();
 document.querySelectorAll('[data-close]').forEach(button=>button.onclick=()=>button.closest('dialog').close());
-function updateVariable(){const variable=config?.variables[$('variable').value];if(!variable)return;$('cadence').textContent=variable.cadence;$('unit').textContent=variable.unit;$('variable-note').textContent=variable.unit==='°C'?'Surface temperature measures the ground, not the air above it.':'Satellite reflectance-derived index of vegetation condition. Unitless; not a percentage.';}
-$('variable').onchange=updateVariable;
+// The heat-map list follows the dates: the server says which variables have data in them.
+let heatVariables=[],heatTotal=0,heatChoice=null,heatReason='',heatRun=0;   // heatChoice: the variable the visitor means, as last listed
+function updateVariable(){
+  const variable=heatVariables.find(v=>v.id===$('variable').value);
+  $('variable-tags').hidden=!variable;
+  $('variable-count').textContent=heatVariables.length<heatTotal?`${heatVariables.length} of ${heatTotal} variables have data in these dates.`:'';
+  $('variable-count').hidden=!$('variable-count').textContent;
+  if(!variable){$('variable-note').textContent=heatReason||(heatChoice?`${heatChoice.label} has no data in these dates. NASA's record runs from ${heatChoice.first} to ${heatChoice.last||'today'}.`:'');return;}
+  $('resolution').textContent=`${variable.resolution} source`;$('cadence').textContent=variable.cadence;$('unit').textContent=variable.unit;$('variable-note').textContent=variable.note;
+}
+async function loadHeatVariables(){
+  const run=++heatRun,query=new URLSearchParams();
+  for(const id of ['start','end'])if($(id).value)query.set(id,$(id).value);
+  try{const data=await api('/api/variables?'+query);if(run!==heatRun)return;heatVariables=data.variables;heatTotal=data.total;heatReason='';}
+  catch(error){if(run!==heatRun)return;heatVariables=[];heatTotal=0;heatReason=error.message;}
+  const themes=new Map();
+  for(const v of heatVariables)themes.set(v.theme,[...(themes.get(v.theme)||[]),v]);
+  $('variable').replaceChildren(...[...themes].map(([theme,list])=>{const group=document.createElement('optgroup');group.label=theme;group.append(...list.map(v=>new Option(v.label,v.id)));return group;}));
+  // Keep the visitor's variable. When the dates leave it without data, choose nothing rather than another one.
+  heatChoice=heatVariables.find(v=>v.id===heatChoice?.id)||heatChoice||heatVariables[0]||null;
+  if(heatVariables.includes(heatChoice))$('variable').value=heatChoice.id;else $('variable').selectedIndex=-1;
+  updateVariable();
+}
+$('variable').onchange=()=>{heatChoice=heatVariables.find(v=>v.id===$('variable').value);updateVariable();};
+$('start').addEventListener('change',loadHeatVariables);$('end').addEventListener('change',loadHeatVariables);
 function setStatus(title,message,state=''){$('status-title').textContent=title;$('status-message').textContent=message;$('status-icon').textContent=state==='error'?'!':state==='busy'?'◌':'↗';document.querySelector('.status-row').classList.toggle('error',state==='error');document.querySelector('.status-row').classList.toggle('busy',state==='busy');}
 function resetResult(){visibleResult=null;activeJob=null;if(overlay){map.removeLayer(overlay);overlay=null;}$('result-panel').hidden=true;$('legend').hidden=true;$('empty-card').hidden=false;$('task-link').hidden=true;$('generate-button').disabled=false;}
 function validateQuery(query){
+  if(!query.variable)throw new Error('Choose a variable first.');
   const [w,s,e,n]=query.bbox;
   if(!(w>=-180&&w<e&&e<=180&&s>=-85&&s<n&&n<=85))throw new Error('Enter valid bounds: west < east, south < north, latitude within ±85°.');
   if((e-w)*(n-s)>100||e-w>20||n-s>20)throw new Error('Select a smaller area: at most 100 square degrees and 20° per side.');
@@ -105,16 +129,16 @@ async function pollJob(id){
   catch(error){setStatus('Status check interrupted',error.message,'error');$('generate-button').disabled=false;pollTimer=setTimeout(()=>pollJob(id),15000);}
 }
 function fileURL(job,name,download=false){return `/api/jobs/${job.id}/files/${name}${download?'?download=true':''}`;}
-function number(value,unit=''){return value===null?'No data':`${value.toFixed(unit==='index'?3:1)}${unit==='°C'?' °C':''}`;}
-function showStats(stats,unit){for(const key of ['mean','min','max'])$(`stat-${key}`).textContent=number(stats[key],unit);$('stat-coverage').textContent=`${stats.coverage.toFixed(1)}%`;}
+function number(value,variable){return value===null?'No data':`${value.toFixed(variable.digits)}${variable.unit==='°C'?' °C':''}`;}
+function showStats(stats,variable){for(const key of ['mean','min','max'])$(`stat-${key}`).textContent=number(stats[key],variable);$('stat-coverage').textContent=`${stats.coverage.toFixed(1)}%`;}
 function showResult(job){
   visibleResult=job;const result=job.result;
   $('empty-card').hidden=true;$('result-panel').hidden=false;$('legend').hidden=false;
   $('map-title').textContent=result.variable.label;
   $('map-hint').textContent=`${result.query.start} — ${result.query.end} • ${result.frames.length} composites`;
-  $('legend-title').textContent=result.variable.unit==='°C'?'Surface temperature':job.query.variable.toUpperCase();$('legend-unit').textContent=result.variable.unit;
+  $('legend-title').textContent=result.variable.short;$('legend-unit').textContent=result.variable.unit;
   $('gradient').style.background=`linear-gradient(to right, ${result.legend.colors.join(',')})`;
-  $('legend-min').textContent=number(result.legend.min,result.variable.unit);$('legend-max').textContent=number(result.legend.max,result.variable.unit);
+  $('legend-min').textContent=number(result.legend.min,result.variable);$('legend-max').textContent=number(result.legend.max,result.variable);
   $('frame').replaceChildren(new Option('Period mean · all composites','mean'),...result.frames.map((frame,i)=>new Option(`${frame.date} · composite start`,String(i))));
   $('download-tif').href=fileURL(job,'mean.tif',true);$('download-json').href=fileURL(job,'metadata.json',true);
   showFrame();map.fitBounds(result.bounds,{padding:[25,25]});
@@ -123,7 +147,7 @@ function showFrame(){
   const job=visibleResult;if(!job)return;const result=job.result;const mean=$('frame').value==='mean';const frame=mean?null:result.frames[Number($('frame').value)];const name=frame?frame.file:'mean.png';
   if(overlay)map.removeLayer(overlay);overlay=L.imageOverlay(fileURL(job,name),result.bounds,{opacity:Number($('opacity').value),interactive:false}).addTo(map);
   overlay.on('error',()=>setStatus('Map image unavailable','Reload this page while the local server is running.','error'));
-  showStats(frame?frame.stats:result.stats,result.variable.unit);$('download-png').href=fileURL(job,name,true);
+  showStats(frame?frame.stats:result.stats,result.variable);$('download-png').href=fileURL(job,name,true);
   $('download-tif').textContent=mean?'GeoTIFF ↓':'Mean GeoTIFF ↓';
 }
 $('frame').onchange=showFrame;$('opacity').oninput=()=>overlay?.setOpacity(Number($('opacity').value));
@@ -136,7 +160,7 @@ $('history-button').onclick=async()=>{try{await refreshHistory();$('history-dial
 async function init(){
   const now=new Date();const today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   $('start').max=today;$('end').max=today;
-  try{config=await api('/api/config');updateService(config.provider);updateVariable();const jobs=await refreshHistory();if(jobs.length){const job=jobs.at(-1);activeJob=job.id;showJob(job);if(!['done','error'].includes(job.status)){$('generate-button').disabled=true;pollJob(job.id);}}}
+  try{config=await api('/api/config');updateService(config.provider);await loadHeatVariables();const jobs=await refreshHistory();if(jobs.length){const job=jobs.at(-1);activeJob=job.id;showJob(job);if(!['done','error'].includes(job.status)){$('generate-button').disabled=true;pollJob(job.id);}}}
   catch(error){setStatus('Server connection needed',error.message,'error');}
 }
 init();

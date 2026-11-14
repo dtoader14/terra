@@ -114,3 +114,10 @@ def test_every_element_the_page_scripts_look_up_is_on_the_page():
         script = (server.ROOT / "static" / name).read_text()
         for element in sorted(set(re.findall(r"\$\('([\w-]+)'\)", script) + re.findall(r"\['west', 'south', 'east', 'north'(?:, '([\w-]+)')+\]", script))):
             assert f'id="{element}"' in page, f"{name} looks up #{element}, which is not on the page"
+
+
+def test_the_heat_map_list_is_not_written_on_the_page_but_asked_from_the_server():
+    page = (server.ROOT / "static" / "index.html").read_text()
+    script = (server.ROOT / "static" / "app.js").read_text()
+    assert '<option value="lst_day"' not in page and "/api/variables?" in script
+

@@ -98,14 +98,27 @@ Browser reloads reconnect to the current session's latest extraction. Download r
 
 Heat maps use the official [NASA AppEEARS API](https://appeears.earthdatacloud.nasa.gov/api/), one of the requested NASA services. The app checks its public catalog before submitting tasks.
 
-| Variable | Product | Layer | Units | Source composite |
-| --- | --- | --- | --- | --- |
-| Day surface temperature | MOD11A2.061 | LST_Day_1km | °C | 8 days |
-| Night surface temperature | MOD11A2.061 | LST_Night_1km | °C | 8 days |
-| Vegetation greenness | MOD13A2.061 | _1_km_16_days_NDVI | index | 16 days |
-| Enhanced vegetation index | MOD13A2.061 | _1_km_16_days_EVI | index | 16 days |
+| Variable | Product | Layer | Units | Source | Record |
+| --- | --- | --- | --- | --- | --- |
+| Day and night surface temperature (Terra) | MOD11A2.061 | LST_Day_1km, LST_Night_1km | °C | 8 days, 1 km | from 2000-02-18 |
+| Day and night surface temperature (Aqua) | MYD11A2.061 | LST_Day_1km, LST_Night_1km | °C | 8 days, 1 km | from 2002-07-04 |
+| Vegetation greenness NDVI, enhanced vegetation index EVI (Terra) | MOD13A2.061 | _1_km_16_days_NDVI, _1_km_16_days_EVI | index | 16 days, 1 km | from 2000-02-18 |
+| NDVI and EVI (Aqua) | MYD13A2.061 | _1_km_16_days_NDVI, _1_km_16_days_EVI | index | 16 days, 1 km | from 2002-07-04 |
+| Leaf area index, light absorbed by plants (FPAR) | MOD15A2H.061 | Lai_500m, Fpar_500m | m²/m², fraction | 8 days, 500 m | from 2000-02-18 |
+| Plant growth (GPP) | MOD17A2HGF.061 | Gpp_500m | kgC/m²/8 days | 8 days, 500 m | 2000-01-01 to 2025-12-31 |
+| Evapotranspiration, potential evapotranspiration | MOD16A2GF.061 | ET_500m, PET_500m | kg/m²/8 days | 8 days, 500 m | 2000-01-01 to 2025-12-31 |
 
-These are approximately 1 km satellite retrieval/composite products, not raw sensor radiances and not forecasts. Land-surface temperature is different from air temperature. Heat maps intentionally use an allowlist of observation-derived products.
+`GET /api/variables?start=2024-07-01&end=2024-07-31` lists the variables whose record overlaps the dates; the page asks it again whenever a date changes. NASA publishes the two gap-filled products (GPP and evapotranspiration) after each year ends, so they are missing for dates in the current year. The record days are written in `nasa.py`, read from NASA's catalogue on 2026-11-14.
+
+A pixel is drawn only where NASA's quality layer passes:
+
+| Quality layer | Rule |
+| --- | --- |
+| `QC_Day`, `QC_Night` (temperature) | mandatory QA good, data quality good, error at most 1 K |
+| `pixel_reliability` (NDVI, EVI) | 0, "good data" |
+| `FparLai_QC`, `Psn_QC_500m`, `ET_QC_500m` | bit 0 is 0, "good quality (main algorithm)" |
+
+Temperature, vegetation indices, leaf area and FPAR are satellite retrievals. GPP and evapotranspiration are NASA estimates computed from satellite and weather-model data; the page says so. None is a forecast, and none is raw sensor radiance. Land-surface temperature is different from air temperature. Heat maps use an allowlist: a product is added only together with its quality rule.
 
 Time series come from [Giovanni](https://giovanni.gsfc.nasa.gov/) and [NASA POWER](https://power.larc.nasa.gov/); see [Time series](#time-series). [NOAA CDO](https://www.ncei.noaa.gov/cdo-web/) is linked as an additional resource, **not an implemented provider**. NOAA's [CDO API](https://www.ncei.noaa.gov/cdo-web/webservices/v2) requires its own `token` header and provides station records; it does not share AppEEARS bearer authentication.
 
