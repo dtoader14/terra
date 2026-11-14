@@ -21,28 +21,29 @@
       <section class="control-section"><h2><span>01</span> Set your place</h2>
         <label for="place-search">City or county in Romania</label><input id="place-search" type="search" placeholder="Search a city or county" autocomplete="off"><div id="place-results"></div>
         <button type="button" class="outline-button full" id="draw-button"><span>⌖</span> Select two corners on map</button>
-        <div class="bounds-grid"><label>West<input id="west" type="number" step="any" min="-180" max="180" value="23" required></label><label>East<input id="east" type="number" step="any" min="-180" max="180" value="28" required></label><label>South<input id="south" type="number" step="any" min="-85" max="85" value="43.5" required></label><label>North<input id="north" type="number" step="any" min="-85" max="85" value="46.5" required></label></div>
+        <div class="bounds-grid"><label>West<input id="west" type="number" step="any" min="-180" max="180" required></label><label>East<input id="east" type="number" step="any" min="-180" max="180" required></label><label>South<input id="south" type="number" step="any" min="-85" max="85" required></label><label>North<input id="north" type="number" step="any" min="-85" max="85" required></label></div>
         <p class="field-note">Coordinates in degrees · Up to 100 square degrees</p>
       </section>
-      <section class="control-section"><h2><span>02</span> Pick a time period</h2>
-        <div class="heat-only"><div class="date-grid"><label>Start date<input id="start" type="date" value="2024-07-01" min="2000-02-24" required></label><label>End date<input id="end" type="date" value="2024-07-31" min="2000-02-24" required></label></div>
+      <section class="control-section locked" id="step-period"><h2><span>02</span> Pick a time period</h2>
+        <p class="field-note" id="period-hint">Pick a place first.</p>
+        <div class="heat-only"><div class="date-grid"><label>Start date<input id="start" type="date" min="2000-02-24" required disabled></label><label>End date<input id="end" type="date" min="2000-02-24" required disabled></label></div>
         <p class="field-note">Up to 93 days · Available good-quality composites are averaged.</p></div>
-        <div class="series-only"><div class="date-grid"><label>From<input id="series-start" type="month" min="1948-01"></label><label>To<input id="series-end" type="month" min="1948-01"></label></div><p class="field-note">Leave both empty for the whole record.</p></div>
+        <div class="series-only"><div class="date-grid"><label>From<input id="series-start" type="month" min="1948-01" disabled></label><label>To<input id="series-end" type="month" min="1948-01" disabled></label></div><button type="button" class="outline-button full" id="series-whole" disabled>Whole record</button><p class="field-note">Pick both months, or take the whole record.</p></div>
       </section>
-            <section class="control-section"><h2><span>03</span> Choose a variable</h2>
-        <div class="heat-only"><label for="variable">NASA MODIS · Terra and Aqua satellites</label><select id="variable" name="variable"></select>
+      <section class="control-section locked" id="step-variable"><h2><span>03</span> Choose a variable</h2>
+        <div class="heat-only"><label for="variable">NASA MODIS · Terra and Aqua satellites</label><select id="variable" name="variable" disabled></select>
         <div class="tags" id="variable-tags" hidden><span id="resolution"></span><span id="cadence"></span><span id="unit"></span></div><p class="field-note" id="variable-note"></p><p class="field-note" id="variable-count" hidden></p></div>
-        <div class="series-only"><label for="series-filter">NASA Giovanni and POWER · monthly</label><input id="series-filter" type="search" placeholder="Search variables" autocomplete="off"><select id="series-variable" size="6" aria-label="Variable"></select><p class="field-note" id="series-variable-note"></p></div>
+        <div class="series-only"><label for="series-filter">NASA Giovanni and POWER · monthly</label><input id="series-filter" type="search" placeholder="Search variables" autocomplete="off" disabled><select id="series-variable" size="6" aria-label="Variable" disabled></select><p class="field-note" id="series-variable-note"></p></div>
       </section>
 <div class="submit-area"><div class="heat-only"><div id="service-note" class="service-note" hidden></div><button class="primary-button full" type="submit" id="generate-button">Generate heat map <span>↗</span></button><p>NASA satellite products. No forecast; only pixels NASA flags as good.</p></div><div class="series-only"><button class="primary-button full" type="button" id="series-button">Show time series <span>↗</span></button><p>Monthly NASA data for Romania. Straight-line trend on yearly means.</p></div></div>
     </form>
     <div class="sidebar-footer heat-only"><span class="source-dot"></span> Powered by NASA AppEEARS</div>
   </aside>
   <section class="explorer" aria-label="Earth data map">
-    <div class="map-heading"><div><div class="eyebrow">SPATIAL EXPLORER</div><h2 id="map-title">Southern Romania</h2></div><span class="data-badge heat-only">SATELLITE OBSERVATIONS</span></div>
+    <div class="map-heading"><div><div class="eyebrow">SPATIAL EXPLORER</div><h2 id="map-title">Choose a place</h2></div><span class="data-badge heat-only">SATELLITE OBSERVATIONS</span></div>
     <div class="map-wrap"><div id="map" aria-label="Interactive map. Use the coordinate fields as a keyboard alternative."></div>
       <div class="map-tools"><button id="fit-button" title="Fit selected region" aria-label="Fit selected region">⌖</button><button id="basemap-button" title="Switch basemap">Terrain</button></div>
-      <div class="map-hint" id="map-hint">Selected area <span>•</span> Adjust the region to begin</div>
+      <div class="map-hint" id="map-hint">Pick a place to begin</div>
       <div class="empty-card" id="empty-card"><div class="orb">◎</div><span class="eyebrow">A NEW PERSPECTIVE STARTS HERE</span><h3>What does Earth look like in data?</h3><p>Choose a place, time period, and variable.<br>Your observed data will appear right here.</p><div class="empty-steps"><span>01 Place</span><span>02 Dates</span><span>03 Variable</span></div></div>
       <div class="legend" id="legend" hidden><div class="legend-top"><strong id="legend-title">Temperature</strong><span id="legend-unit">°C</span></div><div class="gradient" id="gradient"></div><div class="legend-values"><span id="legend-min"></span><span id="legend-max"></span></div><label class="opacity-label">Layer opacity<input id="opacity" type="range" min="0" max="1" step="0.05" value="0.85"></label><p>Transparent areas = no good-quality data</p></div>
       <div class="map-coordinates" id="map-coordinates">WGS 84 / geographic selection</div>

@@ -121,3 +121,12 @@ def test_the_heat_map_list_is_not_written_on_the_page_but_asked_from_the_server(
     script = (server.ROOT / "static" / "app.js").read_text()
     assert '<option value="lst_day"' not in page and "/api/variables?" in script
 
+
+def test_the_page_opens_with_nothing_picked_so_the_steps_can_be_taken_in_order():
+    page = (server.ROOT / "static" / "index.html").read_text()
+    for field in ("west", "east", "south", "north", "start", "end"):
+        tag = page[page.index(f'id="{field}"'):].split(">", 1)[0]
+        assert "value=" not in tag, field   # no ready-made place or dates
+    assert 'id="step-period"' in page and 'id="step-variable"' in page and 'id="period-hint"' in page and 'id="series-whole"' in page
+    assert '<h2 id="map-title">Choose a place</h2>' in page   # what the stand-in page of test_page.py cannot see
+

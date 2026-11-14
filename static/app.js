@@ -1,7 +1,8 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const START = {name: 'Southern Romania', bbox: [23, 43.5, 28, 46.5]};
-let placeName = START.name;   // shown above the map; series.js sets it when a city or county is picked
+const ROMANIA = [20.2, 43.6, 29.7, 48.3];   // what the map shows before a place is picked
+const PICK_FIRST = 'Pick a place and a time period first.';
+let placeName = 'Custom box';   // shown above the map once a place is set; series.js names a picked city or county
 let config, selection, overlay, drawing = false, firstCorner, drawPreview;
 let activeJob = null, pollTimer, visibleResult = null;
 const map = L.map('map', {zoomControl: true, minZoom: 2, maxZoom: 17, worldCopyJump: false, maxBounds: [[-85,-180],[85,180]]});
@@ -11,20 +12,32 @@ let isTerrain = false;
 light.on('tileerror', () => { $('map-coordinates').textContent = 'Basemap unavailable · Coordinate selection still works'; });
 function bbox() { return ['west','south','east','north'].map(id => Number($(id).value)); }
 function boundsOf(box) { return [[box[1],box[0]],[box[3],box[2]]]; }
+// A place is set when the four fields hold a box the map can draw.
+function placeReady() { const box = bbox(); return ['west','south','east','north'].every(id => $(id).value !== '') && box.every(Number.isFinite) && box[0]<box[2] && box[1]<box[3] && box[1]>=-85 && box[3]<=85; }
 function updateSelection(fit = false) {
-  const box = bbox();
-  if (!box.every(Number.isFinite) || box[0]>=box[2] || box[1]>=box[3] || box[1]<-85 || box[3]>85) return;
-  if (selection) map.removeLayer(selection);
-  selection = L.rectangle(boundsOf(box), {color:'#6c8750', weight:1.5, fillColor:'#b7cc8c', fillOpacity:0.07, dashArray:'6 5', interactive:false}).addTo(map);
-  if (fit) map.fitBounds(boundsOf(box), {padding:[45,45]});
-  $('map-title').textContent = placeName;
-  if (visibleResult) $('map-title').textContent += ' · new selection';
-  document.dispatchEvent(new CustomEvent('terra-box'));   // the box changed: series.js reloads its variable list
+  const ready = placeReady(), box = bbox();
+  if (selection) { map.removeLayer(selection); selection = null; }
+  if (ready) selection = L.rectangle(boundsOf(box), {color:'#6c8750', weight:1.5, fillColor:'#b7cc8c', fillOpacity:0.07, dashArray:'6 5', interactive:false}).addTo(map);
+  if (ready && fit) map.fitBounds(boundsOf(box), {padding:[45,45]});
+  $('map-title').textContent = ready ? placeName : 'Choose a place';
+  if (ready && visibleResult) $('map-title').textContent += ' · new selection';
+  document.dispatchEvent(new CustomEvent('terra-box'));   // the place changed: series.js forgets a replaced city or county and refreshes the steps
 }
 function setBounds(box) { ['west','south','east','north'].forEach((id,i)=>$(id).value=box[i]); updateSelection(true); }
-setBounds(START.bbox);
+map.fitBounds(boundsOf(ROMANIA));
 ['west','south','east','north'].forEach(id=>$(id).addEventListener('change',()=>{placeName='Custom box';updateSelection(true);}));
-$('fit-button').onclick = ()=>visibleResult ? map.fitBounds(visibleResult.result.bounds,{padding:[25,25]}) : updateSelection(true);
+$('fit-button').onclick = ()=>visibleResult ? map.fitBounds(visibleResult.result.bounds,{padding:[25,25]}) : placeReady() && map.fitBounds(boundsOf(bbox()),{padding:[45,45]});
+// The steps are taken in order: a place, then a period, then a variable. The variable list is asked from the
+// server only once the first two are set, and again when either changes. series.js calls this for its fields.
+function periodReady() { const series = document.body.dataset.mode === 'series'; return Boolean($(series ? 'series-start' : 'start').value && $(series ? 'series-end' : 'end').value); }
+function refreshSteps() {
+  const place = placeReady(), both = place && periodReady();
+  $('step-period').classList.toggle('locked', !place); $('period-hint').hidden = place;
+  ['start','end','series-start','series-end','series-whole'].forEach(id => $(id).disabled = !place);
+  $('step-variable').classList.toggle('locked', !both);
+  ['variable','series-filter','series-variable'].forEach(id => $(id).disabled = !both);
+  if (document.body.dataset.mode === 'series') loadVariables(both); else loadHeatVariables(both);
+}
 $('basemap-button').onclick = ()=>{isTerrain=!isTerrain;map.removeLayer(isTerrain?light:terrain);(isTerrain?terrain:light).addTo(map);$('basemap-button').textContent=isTerrain?'Light map':'Terrain';};
 function stopDrawing() {
   drawing=false;firstCorner=null;if(drawPreview){map.removeLayer(drawPreview);drawPreview=null;}
@@ -73,31 +86,35 @@ function updateService(provider){
 $('about-button').onclick=()=>$('about-dialog').showModal();
 $('method-button').onclick=()=>$('about-dialog').showModal();
 document.querySelectorAll('[data-close]').forEach(button=>button.onclick=()=>button.closest('dialog').close());
-// The heat-map list follows the dates: the server says which variables have data in them.
+// The heat-map list follows the dates: the server says which variables have data in them. Nothing is chosen
+// for the visitor: the list opens on "Choose a variable…".
 let heatVariables=[],heatTotal=0,heatChoice=null,heatReason='',heatRun=0;   // heatChoice: the variable the visitor means, as last listed
 function updateVariable(){
   const variable=heatVariables.find(v=>v.id===$('variable').value);
-  $('variable-tags').hidden=!variable;
+  $('variable-tags').hidden=!variable;$('generate-button').classList.toggle('locked',!variable);
   $('variable-count').textContent=heatVariables.length<heatTotal?`${heatVariables.length} of ${heatTotal} variables have data in these dates.`:'';
   $('variable-count').hidden=!$('variable-count').textContent;
   if(!variable){$('variable-note').textContent=heatReason||(heatChoice?`${heatChoice.label} has no data in these dates. NASA's record runs from ${heatChoice.first} to ${heatChoice.last||'today'}.`:'');return;}
   $('resolution').textContent=`${variable.resolution} source`;$('cadence').textContent=variable.cadence;$('unit').textContent=variable.unit;$('variable-note').textContent=variable.note;
 }
-async function loadHeatVariables(){
-  const run=++heatRun,query=new URLSearchParams();
-  for(const id of ['start','end'])if($(id).value)query.set(id,$(id).value);
-  try{const data=await api('/api/variables?'+query);if(run!==heatRun)return;heatVariables=data.variables;heatTotal=data.total;heatReason='';}
-  catch(error){if(run!==heatRun)return;heatVariables=[];heatTotal=0;heatReason=error.message;}
-  const themes=new Map();
+async function loadHeatVariables(ready){
+  const run=++heatRun;
+  if(!ready){heatVariables=[];heatTotal=0;heatReason=PICK_FIRST;}
+  else{
+    try{const data=await api('/api/variables?'+new URLSearchParams({start:$('start').value,end:$('end').value}));if(run!==heatRun)return;heatVariables=data.variables;heatTotal=data.total;heatReason='';}
+    catch(error){if(run!==heatRun)return;heatVariables=[];heatTotal=0;heatReason=error.message;}
+  }
+  const themes=new Map(),first=new Option('Choose a variable…','');
+  first.disabled=true;
   for(const v of heatVariables)themes.set(v.theme,[...(themes.get(v.theme)||[]),v]);
-  $('variable').replaceChildren(...[...themes].map(([theme,list])=>{const group=document.createElement('optgroup');group.label=theme;group.append(...list.map(v=>new Option(v.label,v.id)));return group;}));
+  $('variable').replaceChildren(first,...[...themes].map(([theme,list])=>{const group=document.createElement('optgroup');group.label=theme;group.append(...list.map(v=>new Option(v.label,v.id)));return group;}));
   // Keep the visitor's variable. When the dates leave it without data, choose nothing rather than another one.
-  heatChoice=heatVariables.find(v=>v.id===heatChoice?.id)||heatChoice||heatVariables[0]||null;
-  if(heatVariables.includes(heatChoice))$('variable').value=heatChoice.id;else $('variable').selectedIndex=-1;
+  heatChoice=heatVariables.find(v=>v.id===heatChoice?.id)||heatChoice;
+  $('variable').value=heatVariables.includes(heatChoice)?heatChoice.id:'';
   updateVariable();
 }
 $('variable').onchange=()=>{heatChoice=heatVariables.find(v=>v.id===$('variable').value);updateVariable();};
-$('start').addEventListener('change',loadHeatVariables);$('end').addEventListener('change',loadHeatVariables);
+$('start').addEventListener('change',refreshSteps);$('end').addEventListener('change',refreshSteps);
 function setStatus(title,message,state=''){$('status-title').textContent=title;$('status-message').textContent=message;$('status-icon').textContent=state==='error'?'!':state==='busy'?'◌':'↗';document.querySelector('.status-row').classList.toggle('error',state==='error');document.querySelector('.status-row').classList.toggle('busy',state==='busy');}
 function resetResult(){visibleResult=null;activeJob=null;if(overlay){map.removeLayer(overlay);overlay=null;}$('result-panel').hidden=true;$('legend').hidden=true;$('empty-card').hidden=false;$('task-link').hidden=true;$('generate-button').disabled=false;}
 function validateQuery(query){
@@ -160,7 +177,7 @@ $('history-button').onclick=async()=>{try{await refreshHistory();$('history-dial
 async function init(){
   const now=new Date();const today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   $('start').max=today;$('end').max=today;
-  try{config=await api('/api/config');updateService(config.provider);await loadHeatVariables();const jobs=await refreshHistory();if(jobs.length){const job=jobs.at(-1);activeJob=job.id;showJob(job);if(!['done','error'].includes(job.status)){$('generate-button').disabled=true;pollJob(job.id);}}}
+  try{config=await api('/api/config');updateService(config.provider);const jobs=await refreshHistory();if(jobs.length){const job=jobs.at(-1);activeJob=job.id;showJob(job);if(!['done','error'].includes(job.status)){$('generate-button').disabled=true;pollJob(job.id);}}}
   catch(error){setStatus('Server connection needed',error.message,'error');}
 }
 init();

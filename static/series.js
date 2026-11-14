@@ -1,6 +1,6 @@
 'use strict';
 // The place search (both modes) and the time-series mode: a place in Romania, a period and a variable
-// give a chart and a trend. Uses $, api, bbox, setBounds, placeName and map from app.js, which loads first.
+// give a chart and a trend. Uses $, api, bbox, setBounds, placeName, refreshSteps and map from app.js, which loads first.
 // The mode keeps its own status line: app.js rewrites the heat-map one every 30 seconds.
 const SVG = 'http://www.w3.org/2000/svg';
 let seriesVariables = [], seriesReason = null, seriesPlace = null, placeMarker = null, placeTimer = null, seriesTimer = null, seriesRun = 0;
@@ -20,20 +20,22 @@ function setMode(mode) {
   $('mode-heat').classList.toggle('active', mode === 'heat');
   $('mode-series').classList.toggle('active', mode === 'series');
   $('series-panel').hidden = mode !== 'series' || !$('series-chart').childElementCount;
-  if (mode === 'series') loadVariables();
+  refreshSteps();   // each mode has its own period fields and its own variable list
 }
 $('mode-heat').onclick = () => setMode('heat');
 $('mode-series').onclick = () => setMode('series');
 
 function describeVariable() {
   const select = $('series-variable'), v = seriesVariables.find(v => v.id === select.value);
+  $('series-button').classList.toggle('locked', !v);
   if (!v) {   // nothing is chosen: say why
     const wanted = seriesVariables.find(v => v.id === seriesChoice), listed = [...select.options];
     $('series-variable-note').textContent = seriesReason ? seriesReason :
       !seriesVariables.length ? 'No variable has data for this place and period.' :
       !listed.length ? 'No variable matches your search.' :
-      wanted && wanted.too_large ? 'Your box is too large for your variable. Draw a smaller box, or choose another variable.' :
       listed.every(option => option.disabled) ? 'Your box is too large for these variables. Draw a smaller box.' :
+      seriesChoice === null || (wanted && !wanted.too_large) ? 'Choose a variable.' :
+      wanted ? 'Your box is too large for your variable. Draw a smaller box, or choose another variable.' :
       'Your variable has no data for this place and period. Choose another one.';
     return;
   }
@@ -50,9 +52,9 @@ function placeQuery() {
   if ($('series-end').value) query.set('end', $('series-end').value);
   return query;
 }
-function loadVariables() {
-  if (document.body.dataset.mode !== 'series') return;
+function loadVariables(ready) {
   clearTimeout(variablesTimer);
+  if (!ready) { variablesRun++; seriesVariables = []; seriesReason = PICK_FIRST; showVariables(); return; }
   variablesTimer = setTimeout(async () => {
     const run = ++variablesRun;
     try {
@@ -63,7 +65,7 @@ function loadVariables() {
     }
   }, 300);
 }
-function showVariables(searching = false) {
+function showVariables() {
   const text = $('series-filter').value.trim().toLowerCase(), themes = new Map();
   for (const v of seriesVariables) {
     if (text && !`${v.name} ${v.theme} ${v.id}`.toLowerCase().includes(text)) continue;
@@ -82,19 +84,23 @@ function showVariables(searching = false) {
     return group;
   }));
   const open = [...$('series-variable').options].filter(option => !option.disabled).map(option => option.value);
-  // The first listed variable is the start, and a search picks its first match. A new place or period does
-  // neither: it keeps the visitor's variable, or leaves the choice empty and says why.
-  if (open.length && (seriesChoice === null || (searching && !open.includes(seriesChoice)))) seriesChoice = open[0];
+  // Nothing is chosen for the visitor. A new place, period or search keeps their variable while it is listed,
+  // and otherwise leaves the choice empty and says why.
   $('series-variable').value = open.includes(seriesChoice) ? seriesChoice : '';
   describeVariable();
 }
-$('series-filter').oninput = () => showVariables(true);
+$('series-filter').oninput = showVariables;
 $('series-variable').onchange = () => { seriesChoice = $('series-variable').value; describeVariable(); };
-$('series-start').onchange = $('series-end').onchange = loadVariables;
-document.addEventListener('terra-box', () => {   // app.js says the box changed
+$('series-start').onchange = $('series-end').onchange = refreshSteps;
+$('series-whole').onclick = () => {   // the widest period any variable has; each variable then shows what it holds inside it
+  const now = new Date();
+  $('series-start').value = '1948-01'; $('series-end').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  refreshSteps();
+};
+document.addEventListener('terra-box', () => {   // app.js says the place changed
   // A box made by hand (app.js names it 'Custom box') replaces the chosen city or county.
   if (seriesPlace && placeName !== placeLabel(seriesPlace)) { forgetPlace(); $('place-search').value = ''; }
-  loadVariables();
+  refreshSteps();
 });
 
 function placeNote(text) {

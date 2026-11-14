@@ -77,7 +77,7 @@ class El {
 function world(jobs = []) {
   const elements = new Map(), selects = ['series-variable', 'variable', 'frame'];
   const $ = id => elements.get(id) || elements.set(id, new El(id, selects.includes(id) ? 'select' : 'div')).get(id);
-  for (const [id, value] of Object.entries({west: 23, east: 28, south: 43.5, north: 46.5, start: '2024-07-01', end: '2024-07-31', opacity: 0.85})) $(id).value = value;
+  $('opacity').value = 0.85;   // the page opens with no place, no period and no variable
   $('variable').dropDown = $('frame').dropDown = true;
   const onDocument = {}, statusRow = new El('status-row');
   const document = {
@@ -134,13 +134,86 @@ function world(jobs = []) {
   return page;
 }
 
-async function seriesPage() {
-  const page = world();
-  await page.wait(50); page.click('mode-series'); await page.wait(400);
+// A page where the first two steps are already taken.
+async function heatPage(start = '2024-07-01', end = '2024-07-31') {
+  const page = world(); await page.wait(50);
+  await page.search('cluj'); page.change('start', start); page.change('end', end); await page.wait(50);
   return page;
 }
+async function seriesPage() {
+  const page = world(); await page.wait(50);
+  page.click('mode-series'); await page.search('cluj'); page.click('series-whole'); await page.wait(400);
+  return page;
+}
+const disabled = (page, ...ids) => ids.map(id => page.$(id).disabled);
+const locked = (page, id) => page.$(id).classList.contains('locked');
+const choose = (page, id, value) => { page.$(id).value = value; page.$(id).fire('change'); };
 
 const SCENARIOS = {
+  async the_steps_unlock_in_order_and_the_variables_are_asked_only_once_place_and_dates_are_picked() {
+    const page = world(); await page.wait(50);
+    assert.deepEqual(disabled(page, 'start', 'end', 'variable'), [true, true, true]);
+    assert.equal(page.$('period-hint').hidden, false);
+    assert.equal(page.$('variable-note').textContent, 'Pick a place and a time period first.');
+    await page.search('cluj');                                   // step 1: a place
+    assert.deepEqual(disabled(page, 'start', 'end', 'variable'), [false, false, true]);
+    assert.equal(page.$('period-hint').hidden, true);
+    page.change('start', '2024-07-01'); await page.wait(50);     // half of step 2
+    assert.equal(page.$('variable').disabled, true);
+    assert.deepEqual(page.asked('GET /api/variables'), []);
+    page.change('end', '2024-07-31'); await page.wait(50);       // step 2: both dates
+    assert.deepEqual(page.asked('GET /api/variables'), ['GET /api/variables?start=2024-07-01&end=2024-07-31']);
+    assert.equal(page.$('variable').disabled, false);
+    assert.equal(page.$('variable').value, '');                  // step 3 is the visitor's to take
+    assert.equal(locked(page, 'generate-button'), true);
+    choose(page, 'variable', 'et');
+    assert.equal(locked(page, 'generate-button'), false);
+  },
+  async in_time_series_mode_the_variables_are_asked_only_once_place_and_months_are_picked() {
+    const page = world(); await page.wait(50); page.click('mode-series'); await page.wait(400);
+    assert.deepEqual(disabled(page, 'series-start', 'series-end', 'series-whole', 'series-filter', 'series-variable'), [true, true, true, true, true]);
+    assert.equal(page.$('series-variable-note').textContent, 'Pick a place and a time period first.');
+    await page.search('cluj');
+    assert.deepEqual(disabled(page, 'series-start', 'series-end', 'series-whole', 'series-variable'), [false, false, false, true]);
+    assert.deepEqual(page.asked('GET /api/series/variables'), []);
+    page.change('series-start', '2000-01'); page.change('series-end', '2020-12'); await page.wait(400);
+    assert.deepEqual(page.asked('GET /api/series/variables'), ['GET /api/series/variables?place=county%3ACluj&start=2000-01&end=2020-12']);
+    assert.equal(page.$('series-variable').disabled, false);
+    assert.equal(page.$('series-variable').value, '');
+    assert.equal(page.$('series-variable-note').textContent, 'Choose a variable.');
+    assert.equal(locked(page, 'series-button'), true);
+    choose(page, 'series-variable', 'gio:ozone');
+    assert.equal(locked(page, 'series-button'), false);
+  },
+  async whole_record_fills_both_months_and_counts_as_the_period() {
+    const page = await seriesPage();
+    assert.equal(page.$('series-start').value, '1948-01');
+    assert.match(page.$('series-end').value, /^20\d\d-(0[1-9]|1[0-2])$/);
+    assert.equal(page.asked('GET /api/series/variables').length, 1);
+    assert.equal(page.$('series-variable').disabled, false);
+  },
+  async emptying_a_date_locks_the_variables_again_and_the_choice_returns_with_the_date() {
+    const page = await heatPage(), list = page.$('variable');
+    choose(page, 'variable', 'et');
+    page.change('end', ''); await page.wait(50);
+    assert.equal(list.disabled, true);
+    assert.equal(list.value, '');
+    assert.equal(locked(page, 'generate-button'), true);
+    assert.equal(page.$('variable-note').textContent, 'Pick a place and a time period first.');
+    page.change('end', '2024-07-31'); await page.wait(50);
+    assert.equal(list.disabled, false);
+    assert.equal(list.value, 'et');
+  },
+  async a_box_that_cannot_be_drawn_locks_the_later_steps_and_forgets_the_chosen_place() {
+    const page = await heatPage();
+    page.change('west', '30'); await page.wait(50);   // east of the box's own east edge
+    assert.deepEqual(disabled(page, 'start', 'end', 'variable'), [true, true, true]);
+    assert.equal(page.look('seriesPlace'), null);
+    assert.equal(page.$('map-title').textContent, 'Choose a place');
+    page.change('west', '22.5'); await page.wait(50);   // a box again: the dates are still there, so the list comes back
+    assert.deepEqual(disabled(page, 'start', 'end', 'variable'), [false, false, false]);
+    assert.equal(page.$('map-title').textContent, 'Custom box');
+  },
   async enter_in_the_place_search_picks_the_first_result_and_sends_no_heat_map() {
     const page = world(); await page.wait(50);
     page.type('place-search', 'cluj'); await page.wait(400);
@@ -158,7 +231,7 @@ const SCENARIOS = {
   },
   async enter_in_the_place_search_never_asks_a_series_for_the_place_chosen_before() {
     const page = await seriesPage();
-    await page.search('cluj');
+    choose(page, 'series-variable', 'gio:ozone');
     page.type('place-search', 'sibiu'); await page.wait(400);
     page.enter('place-search'); await page.wait(400);
     assert.deepEqual(page.asked('GET /api/series?'), []);
@@ -175,23 +248,35 @@ const SCENARIOS = {
   },
   async a_chosen_variable_that_loses_its_data_is_not_swapped_for_another() {
     const page = await seriesPage(), list = page.$('series-variable');
-    list.value = 'gio:soil'; list.fire('change');
+    choose(page, 'series-variable', 'gio:soil');
     page.change('series-start', '2015-01'); await page.wait(400);
     assert.deepEqual(list.options.map(option => option.held), ['gio:ozone']);
     assert.equal(list.value, '');
     assert.match(page.$('series-variable-note').textContent, /no data for this place and period/);
+    assert.equal(locked(page, 'series-button'), true);
     page.click('series-button'); await page.wait(50);
     assert.deepEqual(page.asked('GET /api/series?'), []);
-    page.change('series-start', ''); await page.wait(400);   // the period is widened again: the choice comes back
+    page.change('series-start', '1948-01'); await page.wait(400);   // the period is widened again: the choice comes back
+    assert.equal(list.value, 'gio:soil');
+  },
+  async searching_narrows_the_list_without_choosing_for_the_visitor() {
+    const page = await seriesPage(), list = page.$('series-variable');
+    assert.equal(list.value, '');
+    choose(page, 'series-variable', 'gio:soil');
+    page.type('series-filter', 'ozone');
+    assert.deepEqual(list.options.map(option => option.held), ['gio:ozone']);
+    assert.equal(list.value, '');
+    assert.equal(page.$('series-variable-note').textContent, 'Choose a variable.');
+    page.type('series-filter', '');
     assert.equal(list.value, 'gio:soil');
   },
   async the_heat_map_list_is_asked_for_the_dates_and_follows_them() {
-    const page = world(), list = page.$('variable'), ids = () => list.options.map(option => option.held);
-    await page.wait(50);
+    const page = await heatPage(), list = page.$('variable'), ids = () => list.options.map(option => option.held).filter(Boolean);
     assert.deepEqual(page.asked('GET /api/variables'), ['GET /api/variables?start=2024-07-01&end=2024-07-31']);
     assert.deepEqual(ids(), ['lst_day', 'lst_day_aqua', 'et']);
-    assert.deepEqual(list.children.map(group => group.label), ['Temperature', 'Water']);
-    assert.equal(list.value, 'lst_day');
+    assert.deepEqual(list.children.map(child => child.label || child.text), ['Choose a variable…', 'Temperature', 'Water']);
+    assert.equal(page.$('variable-tags').hidden, true);
+    choose(page, 'variable', 'lst_day');
     assert.deepEqual(['resolution', 'cadence', 'unit', 'variable-note'].map(id => page.$(id).textContent), ['1 km source', '8-day composite', '°C', 'The ground, not the air.']);
     assert.equal(page.$('variable-count').hidden, true);
     page.change('start', '2001-06-01'); page.change('end', '2001-06-30'); await page.wait(50);   // before Aqua
@@ -200,12 +285,11 @@ const SCENARIOS = {
     assert.equal(list.value, 'lst_day');
   },
   async a_heat_map_variable_without_data_in_the_new_dates_is_not_swapped_for_another() {
-    const page = world(), list = page.$('variable');
-    await page.wait(50);
-    list.value = 'et'; list.fire('change');
+    const page = await heatPage(), list = page.$('variable');
+    choose(page, 'variable', 'et');
     assert.deepEqual(['resolution', 'cadence', 'unit'].map(id => page.$(id).textContent), ['500 m source', '8-day total', 'kg/m²/8 days']);
     page.change('start', '2026-03-01'); page.change('end', '2026-03-31'); await page.wait(50);   // not published for 2026 yet
-    assert.deepEqual(list.options.map(option => option.held), ['lst_day', 'lst_day_aqua']);
+    assert.deepEqual(list.options.map(option => option.held).filter(Boolean), ['lst_day', 'lst_day_aqua']);
     assert.equal(list.value, '');
     assert.equal(page.$('variable-note').textContent, "Evapotranspiration has no data in these dates. NASA's record runs from 2000-01-01 to 2025-12-31.");
     assert.equal(page.$('variable-tags').hidden, true);
@@ -217,9 +301,9 @@ const SCENARIOS = {
     assert.equal(page.$('variable-tags').hidden, false);
   },
   async dates_in_the_wrong_order_empty_the_heat_map_list_and_say_so() {
-    const page = world(); await page.wait(50);
+    const page = await heatPage();
     page.change('start', '2024-08-01'); await page.wait(50);
-    assert.equal(page.$('variable').options.length, 0);
+    assert.deepEqual(page.$('variable').options.map(option => option.held).filter(Boolean), []);
     assert.equal(page.$('variable-note').textContent, 'The start date is after the end date.');
   },
   async a_finished_heat_map_takes_its_legend_title_and_decimals_from_the_variable() {
@@ -227,12 +311,6 @@ const SCENARIOS = {
     assert.equal(page.$('legend-title').textContent, 'Evapotranspiration');
     assert.equal(page.$('legend-unit').textContent, 'kg/m²/8 days');
     assert.deepEqual(['stat-mean', 'stat-min', 'stat-max', 'legend-min', 'legend-max'].map(id => page.$(id).textContent), ['24.5', '3.0', '61.3', '3.0', '61.3']);
-  },
-  async the_first_listed_variable_is_chosen_to_start_with_and_searching_picks_the_first_match() {
-    const page = await seriesPage(), list = page.$('series-variable');
-    assert.equal(list.value, 'gio:soil');
-    page.type('series-filter', 'ozone');
-    assert.equal(list.value, 'gio:ozone');
   },
 };
 
