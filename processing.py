@@ -27,15 +27,13 @@ def _temperature(quality):
 
 
 def _good_bit(quality):
-    return (np.nan_to_num(quality, nan=255).astype(np.uint16) & 1) == 0  # the quality layer's own fill is 255
+    return (np.nan_to_num(quality, nan=255).astype(np.uint16) & 1) == 0
 
 
-# Which pixels are drawn, by the quality layer's kind: (the test, how the metadata words it).
-# NASA's tables for each layer: AppEEARS /api/quality/<product>/<quality layer>.
 QUALITY = {
-    "temperature": (_temperature, "mandatory QA=0, data quality=0, LST error bits=0 (<=1 K)"),  # MOD11, MYD11
-    "reliability": (lambda quality: quality == 0, "pixel reliability=0 (good data)"),            # MOD13, MYD13
-    "good_bit": (_good_bit, "bit 0=0 (good quality, main algorithm)"),                           # MOD15, MOD16, MOD17
+    "temperature": (_temperature, "mandatory QA=0, data quality=0, LST error bits=0 (<=1 K)"),
+    "reliability": (lambda quality: quality == 0, "pixel reliability=0 (good data)"),
+    "good_bit": (_good_bit, "bit 0=0 (good quality, main algorithm)"),
 }
 
 

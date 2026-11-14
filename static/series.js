@@ -1,12 +1,9 @@
 'use strict';
-// The place search (both modes) and the time-series mode: a place in Romania, a period and a variable
-// give a chart and a trend. Uses $, api, bbox, setBounds, placeName, refreshSteps and map from app.js, which loads first.
-// The mode keeps its own status line: app.js rewrites the heat-map one every 30 seconds.
 const SVG = 'http://www.w3.org/2000/svg';
 let seriesVariables = [], seriesReason = null, seriesPlace = null, placeMarker = null, placeTimer = null, seriesTimer = null, seriesRun = 0;
 let variablesTimer = null, variablesRun = 0;
-let seriesChoice = null;   // the variable the visitor means; a new place or period may hide it but never swaps in another
-let placeListed = [];      // the places listed for the text as typed now; empty while a search is on its way
+let seriesChoice = null;
+let placeListed = [];
 
 function seriesStatus(title, message, state = '') {
   $('series-status-title').textContent = title;
@@ -20,7 +17,7 @@ function setMode(mode) {
   $('mode-heat').classList.toggle('active', mode === 'heat');
   $('mode-series').classList.toggle('active', mode === 'series');
   $('series-panel').hidden = mode !== 'series' || !$('series-chart').childElementCount;
-  refreshSteps();   // each mode has its own period fields and its own variable list
+  refreshSteps();
 }
 $('mode-heat').onclick = () => setMode('heat');
 $('mode-series').onclick = () => setMode('series');
@@ -28,7 +25,7 @@ $('mode-series').onclick = () => setMode('series');
 function describeVariable() {
   const select = $('series-variable'), v = seriesVariables.find(v => v.id === select.value);
   $('series-button').classList.toggle('locked', !v);
-  if (!v) {   // nothing is chosen: say why
+  if (!v) {
     const wanted = seriesVariables.find(v => v.id === seriesChoice), listed = [...select.options];
     $('series-variable-note').textContent = seriesReason ? seriesReason :
       !seriesVariables.length ? 'No variable has data for this place and period.' :
@@ -44,13 +41,8 @@ function describeVariable() {
     `${v.source} · ${v.kind === 'satellite' ? 'satellite measurement' : 'model product'} · ${v.unit || 'no unit'} · ${v.grid}${v.unit_hint ? ' · ' + v.unit_hint : ''}` +
     ` · data from ${v.available_from} to ${v.available_to} (${years})`;
 }
-// The list follows the place and the period: the server says which variables have data there and then.
 function placeQuery() {
-  const query = new URLSearchParams();
-  if (seriesPlace) query.set('place', seriesPlace.id); else query.set('bbox', bbox().join(','));
-  if ($('series-start').value) query.set('start', $('series-start').value);
-  if ($('series-end').value) query.set('end', $('series-end').value);
-  return query;
+  return new URLSearchParams({...(seriesPlace ? {place: seriesPlace.id} : {bbox: bbox().join(',')}), start: $('series-start').value, end: $('series-end').value});
 }
 function loadVariables(ready) {
   clearTimeout(variablesTimer);
@@ -77,28 +69,25 @@ function showVariables() {
     group.label = theme;
     group.append(...list.map(v => {
       const option = new Option(v.too_large ? `${v.name} · ${v.product} · box too large` : `${v.name} · ${v.product}`, v.id);
-      option.disabled = v.too_large;   // more than 800 unsaved grid cells: the server would refuse it
+      option.disabled = v.too_large;
       option.title = v.too_large ? `This box needs ${v.cells} grid cells for this variable. Draw a smaller box.` : '';
       return option;
     }));
     return group;
   }));
   const open = [...$('series-variable').options].filter(option => !option.disabled).map(option => option.value);
-  // Nothing is chosen for the visitor. A new place, period or search keeps their variable while it is listed,
-  // and otherwise leaves the choice empty and says why.
   $('series-variable').value = open.includes(seriesChoice) ? seriesChoice : '';
   describeVariable();
 }
 $('series-filter').oninput = showVariables;
 $('series-variable').onchange = () => { seriesChoice = $('series-variable').value; describeVariable(); };
 $('series-start').onchange = $('series-end').onchange = refreshSteps;
-$('series-whole').onclick = () => {   // the widest period any variable has; each variable then shows what it holds inside it
+$('series-whole').onclick = () => {
   const now = new Date();
   $('series-start').value = '1948-01'; $('series-end').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   refreshSteps();
 };
-document.addEventListener('terra-box', () => {   // app.js says the place changed
-  // A box made by hand (app.js names it 'Custom box') replaces the chosen city or county.
+document.addEventListener('terra-box', () => {
   if (seriesPlace && placeName !== placeLabel(seriesPlace)) { forgetPlace(); $('place-search').value = ''; }
   refreshSteps();
 });
@@ -114,16 +103,16 @@ function forgetPlace() {
 }
 function placeLabel(place) { return place.kind === 'county' ? `${place.name} county` : `${place.name}, ${place.county}`; }
 function choosePlace(place) {
-  if (drawing) stopDrawing();   // a corner already clicked on the map must not turn a later click into a box
+  if (drawing) stopDrawing();
   forgetPlace();
   seriesPlace = place;
   $('place-search').value = placeLabel(place);
   $('place-results').replaceChildren(); placeListed = [];
   if (place.kind === 'town') placeMarker = L.circleMarker([place.lat, place.lon], {radius: 7, color: '#244f46', weight: 2, fillColor: '#d5eaaa', fillOpacity: 0.9}).addTo(map);
   placeName = placeLabel(place);
-  setBounds(place.bbox);   // a county is the box around its towns; a town gets half a degree around it for heat maps
+  setBounds(place.bbox);
 }
-$('place-search').oninput = () => {   // the chosen place stays until another one is picked
+$('place-search').oninput = () => {
   clearTimeout(placeTimer);
   placeListed = [];
   const text = $('place-search').value.trim();
@@ -136,15 +125,13 @@ $('place-search').oninput = () => {   // the chosen place stays until another on
       $('place-results').replaceChildren(...places.map(place => {
         const button = document.createElement('button');
         button.type = 'button'; button.onclick = () => choosePlace(place);
-        button.textContent = place.kind === 'county' ? `${place.name} county · the box around it` : `${place.name}, ${place.county}`;
+        button.textContent = placeLabel(place) + (place.kind === 'county' ? ' · the box around it' : '');
         return button;
       }));
       if (!places.length) placeNote('No city or county found. Try another spelling, or use a box.');
     } catch (error) { placeNote(error.message); }
   }, 250);
 };
-// Enter picks the first place listed for what is typed. Without this the browser would send the form, and a
-// heat map or a series would start for the place chosen before.
 $('place-search').addEventListener('keydown', event => {
   if (event.key !== 'Enter') return;
   event.preventDefault();
@@ -167,7 +154,6 @@ function drawSeries(data) {
   chart.replaceChildren();
   $('series-panel').hidden = document.body.dataset.mode !== 'series';
   const shown = data.points.filter(point => point.value !== null);
-  // Say how many cells were really averaged: a box over sea or a border can hold cells with no data.
   const counts = shown.map(point => point.cells_used), fewest = Math.min(...counts), most = Math.max(...counts);
   const averaged = !shown.length || (fewest === cells && most === cells) ? `${cells}` : `${fewest === most ? most : fewest + ' to ' + most} of ${cells}`;
   $('series-title').textContent = `${data.variable.name} · ${where} · ${averaged} grid cell${cells === 1 ? '' : 's'} (${data.location.grid})`;
@@ -190,7 +176,7 @@ function drawSeries(data) {
     part('text', {...label, x: left - 8, y: H - bottom, 'text-anchor': 'end'}, digits(low)),
     part('text', {...label, x: left, y: H - 9}, data.points[0].month.slice(0, 4)),
     part('text', {...label, x: W - right, y: H - 9, 'text-anchor': 'end'}, data.points.at(-1).month.slice(0, 4)));
-  let path = '', drawing = false;                      // the monthly line breaks where a month is missing
+  let path = '', drawing = false;
   for (const point of data.points) {
     if (point.value === null) { drawing = false; continue; }
     path += `${drawing ? 'L' : 'M'}${X(when(point.month)).toFixed(1)} ${Y(point.value).toFixed(1)}`;
@@ -209,7 +195,7 @@ async function askSeries(run, query) {
   try {
     const data = await api('/api/series?' + query);
     if (run !== seriesRun) return;
-    if (data.status === 'fetching') {                 // the server is still getting grid cells from NASA: ask again
+    if (data.status === 'fetching') {
       seriesStatus('Fetching from NASA', `Fetching ${data.cells_saved} of ${data.cells_total} grid cells`, 'busy');
       seriesTimer = setTimeout(() => askSeries(run, query), 5000);
       return;
@@ -217,13 +203,13 @@ async function askSeries(run, query) {
     drawSeries(data);
     seriesStatus('Your time series is ready', data.from_saved ? 'Answered from saved data.' : 'Fetched from NASA and saved for next time.');
   } catch (error) {
-    if (run === seriesRun) { seriesStatus('Check your request', error.message, 'error'); $('series-panel').hidden = true; }   // no stale chart beside an error
+    if (run === seriesRun) { seriesStatus('Check your request', error.message, 'error'); $('series-panel').hidden = true; }
   }
   if (run === seriesRun) $('series-button').disabled = false;
 }
 function showSeries() {
   const variable = $('series-variable').value;
-  if (!variable) { seriesStatus('Check your request', $('series-variable-note').textContent || 'Choose a variable first.', 'error'); return; }   // the note says why none can be chosen
+  if (!variable) { seriesStatus('Check your request', $('series-variable-note').textContent || 'Choose a variable first.', 'error'); return; }
   const query = placeQuery();
   query.set('variable', variable);
   clearTimeout(seriesTimer);
@@ -232,7 +218,6 @@ function showSeries() {
   askSeries(++seriesRun, query);
 }
 $('series-button').onclick = showSeries;
-// Enter inside the form must not start a heat map while the time-series mode is showing.
 $('explore-form').addEventListener('submit', event => {
   if (document.body.dataset.mode !== 'series') return;
   event.preventDefault(); event.stopImmediatePropagation(); showSeries();

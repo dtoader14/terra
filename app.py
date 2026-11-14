@@ -20,14 +20,13 @@ from nasa import VARIABLES, NasaClient, NasaError, available, task_payload
 from processing import process_bundle
 
 ROOT = Path(__file__).resolve().parent
-load_dotenv(ROOT / ".env")  # the NASA login when running without Docker; Compose passes it in otherwise
-PUBLIC = os.environ.get("TERRA_PUBLIC") == "1"  # on a public link, behind the host's HTTPS proxy
+load_dotenv(ROOT / ".env")
+PUBLIC = os.environ.get("TERRA_PUBLIC") == "1"
 DATA = ROOT / "data"
 DATA.mkdir(exist_ok=True)
 
 
 def scheme(request):
-    """A host's HTTPS proxy talks plain http to this server; on a public link, believe the scheme it reports."""
     forwarded = request.headers.get("x-forwarded-proto", "").split(",")[0].strip()
     return forwarded if PUBLIC and forwarded in ("http", "https") else request.url.scheme
 
@@ -113,7 +112,6 @@ NO_LOGIN = "Heat maps need the NASA login. Set EARTHDATA_USERNAME and EARTHDATA_
 
 
 def provider():
-    """Heat-map availability: the NASA login from the environment."""
     return dict(READY) if sources.has_login() else {"state": "unconfigured", "available": False, "message": NO_LOGIN}
 
 
@@ -124,7 +122,7 @@ def config(request: Request, response: Response):
         sid = secrets.token_urlsafe(32)
         sessions[sid] = {"created": time.time()}
         response.set_cookie("earth_session", sid, httponly=True, samesite="strict", secure=scheme(request) == "https", path="/")
-    return {"variables": VARIABLES, "provider": provider(), "series_login": sources.has_login()}
+    return {"variables": VARIABLES, "provider": provider()}
 
 
 @app.get("/api/health")
@@ -171,7 +169,7 @@ def worker(job_id, query, token):
         update("Heat map ready. Only good-quality satellite observations are displayed.")
     except NasaError as exc:
         if getattr(exc, "authentication", False):
-            sources.forget("appeears")  # the next heat map logs in again
+            sources.forget("appeears")
             job["status"], job["message"] = "error", "NASA refused the server's login. Please try again shortly."
         else:
             job["status"], job["message"] = "error", str(exc)
@@ -227,7 +225,6 @@ def get_file(job_id: str, name: str, request: Request, download: bool = False):
 
 @app.get("/api/variables")
 def variables(start: date | None = None, end: date | None = None):
-    """The heat-map variables that have data in the period; all of them when no period is given."""
     if start and end and start > end:
         raise HTTPException(400, "The start date is after the end date.")
     return {"variables": available(start, end), "total": len(VARIABLES)}

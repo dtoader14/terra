@@ -1,8 +1,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const ROMANIA = [20.2, 43.6, 29.7, 48.3];   // what the map shows before a place is picked
 const PICK_FIRST = 'Pick a place and a time period first.';
-let placeName = 'Custom box';   // shown above the map once a place is set; series.js names a picked city or county
+let placeName = 'Custom box';
 let config, selection, overlay, drawing = false, firstCorner, drawPreview;
 let activeJob = null, pollTimer, visibleResult = null;
 const map = L.map('map', {zoomControl: true, minZoom: 2, maxZoom: 17, worldCopyJump: false, maxBounds: [[-85,-180],[85,180]]});
@@ -12,7 +11,6 @@ let isTerrain = false;
 light.on('tileerror', () => { $('map-coordinates').textContent = 'Basemap unavailable · Coordinate selection still works'; });
 function bbox() { return ['west','south','east','north'].map(id => Number($(id).value)); }
 function boundsOf(box) { return [[box[1],box[0]],[box[3],box[2]]]; }
-// A place is set when the four fields hold a box the map can draw.
 function placeReady() { const box = bbox(); return ['west','south','east','north'].every(id => $(id).value !== '') && box.every(Number.isFinite) && box[0]<box[2] && box[1]<box[3] && box[1]>=-85 && box[3]<=85; }
 function updateSelection(fit = false) {
   const ready = placeReady(), box = bbox();
@@ -21,14 +19,12 @@ function updateSelection(fit = false) {
   if (ready && fit) map.fitBounds(boundsOf(box), {padding:[45,45]});
   $('map-title').textContent = ready ? placeName : 'Choose a place';
   if (ready && visibleResult) $('map-title').textContent += ' · new selection';
-  document.dispatchEvent(new CustomEvent('terra-box'));   // the place changed: series.js forgets a replaced city or county and refreshes the steps
+  document.dispatchEvent(new CustomEvent('terra-box'));
 }
 function setBounds(box) { ['west','south','east','north'].forEach((id,i)=>$(id).value=box[i]); updateSelection(true); }
-map.fitBounds(boundsOf(ROMANIA));
+map.fitBounds([[43.6, 20.2], [48.3, 29.7]]);
 ['west','south','east','north'].forEach(id=>$(id).addEventListener('change',()=>{placeName='Custom box';updateSelection(true);}));
 $('fit-button').onclick = ()=>visibleResult ? map.fitBounds(visibleResult.result.bounds,{padding:[25,25]}) : placeReady() && map.fitBounds(boundsOf(bbox()),{padding:[45,45]});
-// The steps are taken in order: a place, then a period, then a variable. The variable list is asked from the
-// server only once the first two are set, and again when either changes. series.js calls this for its fields.
 function periodReady() { const series = document.body.dataset.mode === 'series'; return Boolean($(series ? 'series-start' : 'start').value && $(series ? 'series-end' : 'end').value); }
 function refreshSteps() {
   const place = placeReady(), both = place && periodReady();
@@ -83,9 +79,7 @@ function updateService(provider){
 $('about-button').onclick=()=>$('about-dialog').showModal();
 $('method-button').onclick=()=>$('about-dialog').showModal();
 document.querySelectorAll('[data-close]').forEach(button=>button.onclick=()=>button.closest('dialog').close());
-// The heat-map list follows the dates: the server says which variables have data in them. Nothing is chosen
-// for the visitor: the list opens on "Choose a variable…".
-let heatVariables=[],heatTotal=0,heatChoice=null,heatReason='',heatRun=0;   // heatChoice: the variable the visitor means, as last listed
+let heatVariables=[],heatTotal=0,heatChoice=null,heatReason='',heatRun=0;
 function updateVariable(){
   const variable=heatVariables.find(v=>v.id===$('variable').value);
   $('variable-tags').hidden=!variable;$('generate-button').classList.toggle('locked',!variable);
@@ -105,7 +99,6 @@ async function loadHeatVariables(ready){
   first.disabled=true;
   for(const v of heatVariables)themes.set(v.theme,[...(themes.get(v.theme)||[]),v]);
   $('variable').replaceChildren(first,...[...themes].map(([theme,list])=>{const group=document.createElement('optgroup');group.label=theme;group.append(...list.map(v=>new Option(v.label,v.id)));return group;}));
-  // Keep the visitor's variable. When the dates leave it without data, choose nothing rather than another one.
   heatChoice=heatVariables.find(v=>v.id===heatChoice?.id)||heatChoice;
   $('variable').value=heatVariables.includes(heatChoice)?heatChoice.id:'';
   updateVariable();

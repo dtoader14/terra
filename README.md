@@ -183,7 +183,7 @@ node --check static/app.js
 
 `requirements-lock.txt` records the exact environment used for validation, including the test dependency. `requirements.txt` contains the supported runtime ranges.
 
-Tests cover query bounds/dates, NASA payload formatting, scaling exactly once, QA rejection, QA zero handling, missing-pixel averaging, transparent rendering, the download-to-GeoTIFF pipeline, bearer headers, cross-origin header stripping, expiration errors, CSRF checks, and session isolation. Artificial fixtures exist only in tests and are never offered as NASA observations. Time-series tests cover grid cells, area-weighted averaging, the trend numbers against a hand-checked example, town matching, the format of both NASA answers (one real Giovanni answer is kept as a fixture), fetching, the limits, the environment login and public mode. No test calls NASA, and the test run never holds the real login: `tests/conftest.py` blanks both names before `.env` is loaded.
+Tests cover query bounds/dates, NASA payload formatting, scaling exactly once, QA rejection, QA zero handling, missing-pixel averaging, transparent rendering, the download-to-GeoTIFF pipeline, bearer headers, cross-origin header stripping, expiration errors, CSRF checks, and session isolation. Artificial fixtures exist only in tests and are never offered as NASA observations.
 
 Validation performed during development: The original raster suite passed; public NASA product metadata was fetched live.
 

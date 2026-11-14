@@ -1,4 +1,3 @@
-"""Time series for Romania: the offered variables, town lookup, grid cells, area-weighted averages and linear trend."""
 import csv
 import math
 import unicodedata
@@ -9,8 +8,8 @@ import numpy as np
 from scipy import stats
 
 HERE = Path(__file__).resolve().parent
-ROMANIA = (20.2, 43.6, 29.7, 48.3)  # west, south, east, north
-Grid = namedtuple("Grid", "dlat dlon plat plon")  # cell size and phase: a centre is phase + k * size
+ROMANIA = (20.2, 43.6, 29.7, 48.3)
+Grid = namedtuple("Grid", "dlat dlon plat plon")
 EPS = 1e-9
 TOO_SHORT = "Fewer than 10 complete years in this period."
 FLAT = "The yearly means do not change in this period."
@@ -35,20 +34,17 @@ def public_variable(variable):
 
 
 def _plain(text):
-    """Lower case, no diacritics, hyphens as spaces: 'Alba-Iulia' and 'ALBA IULIA' compare equal."""
     text = unicodedata.normalize("NFKD", text.lower())
     return " ".join("".join(c for c in text if not unicodedata.combining(c)).replace("-", " ").split())
 
 
 def _places():
-    """Towns from places.tsv, and one county per county name: the box around all of its towns."""
     places, names, extents = {}, [], {}
     with open(HERE / "places.tsv", encoding="utf-8") as stream:
         next(stream)
-        for line in stream:  # already ordered by population, largest first
+        for line in stream:
             pid, name, ascii_name, alt, county, lat, lon, population = line.rstrip("\n").split("\t")
             lat, lon = float(lat), float(lon)
-            # A town's box is half a degree around it, enough for a heat map; a time series uses its one grid cell.
             places[pid] = {"id": pid, "kind": "town", "name": name, "county": county, "lat": lat, "lon": lon, "population": int(population),
                            "bbox": [round(lon - .25, 4), round(lat - .25, 4), round(lon + .25, 4), round(lat + .25, 4)]}
             names.append((pid, {_plain(n) for n in (name, ascii_name, *alt.split(","))} - {""}))
@@ -56,20 +52,18 @@ def _places():
             extents[county] = (min(west, lon), min(south, lat), max(east, lon), max(north, lat))
     counties = {}
     for county, (west, south, east, north) in sorted(extents.items()):
-        if county == "Bucharest":   # a city, not a county: its three entries span a few kilometres. The town entry covers it.
+        if county == "Bucharest":
             continue
         counties[county] = places["county:" + county] = {
             "id": "county:" + county, "kind": "county", "name": county, "county": county, "lat": round((south + north) / 2, 4),
             "lon": round((west + east) / 2, 4), "population": None, "bbox": [west, south, east, north]}
-    # Counties are searched first, so "cluj" offers the county before Cluj-Napoca.
-    return places, [(place["id"], {_plain(name)}) for name, place in counties.items()] + names, counties
+    return places, [(place["id"], {_plain(name)}) for name, place in counties.items()] + names
 
 
-PLACES, _NAMES, COUNTIES = _places()
+PLACES, _NAMES = _places()
 
 
 def find_places(q, limit=10):
-    """Counties and towns whose name starts with q, then those whose name contains it; larger towns first."""
     q, limit = _plain(q), min(max(limit, 1), 25)
     if not q or len(q) > 80:
         return []
@@ -109,7 +103,6 @@ def _centres(low, high, size, phase):
 def cells_in(grid, bbox):
     west, south, east, north = bbox
     cells = [(lat, lon) for lat in _centres(south, north, grid.dlat, grid.plat) for lon in _centres(west, east, grid.dlon, grid.plon)]
-    # A box smaller than a cell holds no centre: use the cell that holds the box's centre.
     return cells or [cell_of(grid, (south + north) / 2, (west + east) / 2)]
 
 
@@ -122,7 +115,6 @@ def _month(index):
 
 
 def average(records):
-    """Monthly mean over cells, weighted by cos(latitude). records: {(lat, lon): (first_month, values, NaN = missing)}."""
     spans = [(_index(first), cell[0], values) for cell, (first, values) in records.items() if len(values)]
     if not spans:
         return [], [], []
@@ -144,7 +136,6 @@ def window(months, values, used, start, end):
 
 
 def yearly(months, values):
-    """(year, mean) for every calendar year with all 12 months present."""
     years = {}
     for month, value in zip(months, values):
         if value is not None:
@@ -153,7 +144,6 @@ def yearly(months, values):
 
 
 def mann_kendall(y):
-    """Two-sided p-value of the Mann-Kendall trend test, normal approximation with tie correction."""
     y = np.asarray(y, dtype=float)
     n = len(y)
     s = float(np.sign(y[None, :] - y[:, None])[np.triu_indices(n, 1)].sum())
@@ -165,12 +155,11 @@ def mann_kendall(y):
 
 
 def trend(months, values):
-    """Least-squares line through yearly means of complete years. Returns (trend, None) or (None, reason)."""
     points = yearly(months, values)
     if len(points) < 10:
         return None, TOO_SHORT
     years, means = [year for year, _ in points], [mean for _, mean in points]
-    if max(means) == min(means):  # a flat series has no slope to test, and no p-value
+    if max(means) == min(means):
         return None, FLAT
     fit = stats.linregress(years, means)
     if not (math.isfinite(fit.pvalue) and math.isfinite(fit.stderr)):

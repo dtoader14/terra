@@ -1,4 +1,3 @@
-"""Saved grid cells and the fetching that fills them: the answer behind GET /api/series."""
 import math
 import re
 import sqlite3
@@ -16,20 +15,17 @@ import series
 import sources
 from nasa import NasaError
 
-MAX_UNSAVED_CELLS = 800        # per request: about two minutes of Giovanni calls
-MAX_FETCHES = 2                # fetches running at once
-DAILY_GIOVANNI_CALLS = 20_000  # the public link must not spend the NASA login without limit
-GIOVANNI_WORKERS = 24          # about six calls a second, the rate measured as safe
-WAIT_SECONDS = 20              # a request waits this long, then answers 202
+MAX_UNSAVED_CELLS = 800
+MAX_FETCHES = 2
+DAILY_GIOVANNI_CALLS = 20_000
+GIOVANNI_WORKERS = 24
+WAIT_SECONDS = 20
 MONTH = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
-REFUSAL_MEMORY = 120            # seconds a refused NASA login is remembered, so it is not sent again for every request
 BOX_HELP = "A box is west,south,east,north in degrees."
 FAILED = "The series could not be fetched. Please try again."
 
 
 class Store:
-    """One row per variable and grid cell, holding that cell's whole monthly record."""
-
     def __init__(self, path):
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -40,7 +36,7 @@ class Store:
             return db.execute(sql, args).fetchall()
 
     @staticmethod
-    def _key(cell):  # whole numbers of 1/10000 degree, so lookups never compare decimals
+    def _key(cell):
         return round(cell[0] * 10000), round(cell[1] * 10000)
 
     def get(self, variable, cells):
@@ -53,7 +49,6 @@ class Store:
         return {wanted[(lat, lon)]: (first, np.frombuffer(vals, dtype="float64")) for lat, lon, first, vals in rows if (lat, lon) in wanted}
 
     def count(self, variable, cells):
-        """How many of these cells are saved. The cells are a full rectangle of the grid, so a range count is exact."""
         keys = [self._key(cell) for cell in cells]
         lats, lons = [key[0] for key in keys], [key[1] for key in keys]
         return self._run("SELECT COUNT(*) FROM cell WHERE variable = ? AND lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?",
@@ -65,29 +60,19 @@ class Store:
 
 class _Fetch:
     def __init__(self, variable):
-        self.variable, self.error, self.refused = variable, None, False  # refused: NASA turned the login down
+        self.variable, self.error, self.refused = variable, None, False
 
 
 store = Store(Path(__file__).resolve().parent / "data" / "series.sqlite")
-_changed = threading.Condition()   # guards the three structures below; notified when a cell lands
-_inflight = {}                     # (variable id, cell) -> the fetch that is getting it
-_active = set()                    # fetches still running
+_changed = threading.Condition()
+_inflight = {}
+_active = set()
 _spent = {"day": None, "calls": 0}
-_refused = {"at": None, "message": ""}   # the last time NASA turned the login down
+_refused = {"at": None, "message": ""}
 _pool = ThreadPoolExecutor(GIOVANNI_WORKERS)
 
 
-def reset():
-    with _changed:
-        _inflight.clear()
-        _active.clear()
-        _spent.update(day=None, calls=0)
-        _refused.update(at=None, message="")
-        _changed.notify_all()
-
-
 def _landed(fetch, cells):
-    """Un-mark cells this fetch was getting. A cell that a newer fetch has taken over stays marked."""
     with _changed:
         for cell in cells:
             if _inflight.get((fetch.variable, cell)) is fetch:
@@ -101,10 +86,9 @@ def _failed(fetch, exc):
 
 
 def _fetch(fetch, variable, cells, saving):
-    """Runs in its own thread: get the cells from NASA and save each one as it arrives."""
     vid = variable["id"]
     try:
-        if variable["source"] == "NASA POWER":   # one call returns every cell of the variable
+        if variable["source"] == "NASA POWER":
             found = sources.power_cells(vid.removeprefix("power:"))
             for cell, (first, values) in found.items():
                 saving.put(vid, cell, first, values)
@@ -117,17 +101,17 @@ def _fetch(fetch, variable, cells, saving):
                 if not call.cancelled():
                     try:
                         _, first, values = call.result()
-                        saving.put(vid, calls[call], first or variable["first_month"], values)   # an empty record counts as saved
+                        saving.put(vid, calls[call], first or variable["first_month"], values)
                     except Exception as exc:
                         _failed(fetch, exc)
-                        if fetch.refused:   # NASA turned the login down: do not send it again for every other cell
+                        if fetch.refused:
                             for other in calls:
                                 other.cancel()
                 _landed(fetch, [calls[call]])
     except Exception as exc:
         _failed(fetch, exc)
     finally:
-        with _changed:   # one step: nobody may see this fetch gone while its cells still look taken
+        with _changed:
             _active.discard(fetch)
             if fetch.refused:
                 _refused.update(at=time.monotonic(), message=fetch.error)
@@ -135,11 +119,10 @@ def _fetch(fetch, variable, cells, saving):
 
 
 def _start(variable, cells):
-    """Called with _changed held: refuse or start a fetch for cells nobody is getting yet."""
-    if variable["source"] != "NASA POWER":   # POWER needs no login and is one call, so it is not rationed
+    if variable["source"] != "NASA POWER":
         if not sources.has_login():
             raise HTTPException(503, "This series is not saved yet and the server has no NASA login.")
-        if _refused["at"] is not None and time.monotonic() - _refused["at"] < REFUSAL_MEMORY:
+        if _refused["at"] is not None and time.monotonic() - _refused["at"] < sources.REFUSAL_MEMORY:
             raise HTTPException(503, _refused["message"])
         if len(cells) > MAX_UNSAVED_CELLS:
             raise HTTPException(422, f"This box needs {len(cells)} grid cells that are not saved yet. Draw a smaller box.")
@@ -181,12 +164,11 @@ def _period(start, end):
 
 
 def _where(bbox, place):
-    """What was asked for: (the answer's location, the box to average or None, the town or None)."""
     if place is not None:
         found = series.place(place)
         if found is None:
             raise HTTPException(404, "Unknown place.")
-        if found["kind"] == "town":   # a town is the one grid cell that contains it
+        if found["kind"] == "town":
             return {"type": "place", "bbox": None, "name": found["name"], "county": found["county"]}, None, found
         box, location = tuple(found["bbox"]), {"type": "county", "name": found["name"], "county": found["county"]}
     else:
@@ -202,12 +184,10 @@ def _cells(grid, box, town):
 
 
 def _full_years(first, last):
-    """Calendar years that lie wholly between two months, both included."""
     return max(0, (int(last[:4]) - (last[5:] != "12")) - (int(first[:4]) + (first[5:] != "01")) + 1)
 
 
 def available(bbox, place, start, end):
-    """The variables that have something to show for this place and period, with what each can offer."""
     if bbox is not None and place is not None:
         raise HTTPException(400, "Give either a box or a place.")
     _period(start, end)
@@ -222,7 +202,7 @@ def available(bbox, place, start, end):
     listed, cells_on = [], {}
     for variable in series.VARIABLES.values():
         first, last = max(start or "", variable["first_month"]), min(end or "9999-12", variable["last_month"])
-        if first > last:   # the record and the period do not overlap
+        if first > last:
             continue
         entry = {**series.public_variable(variable), "available_from": first, "available_to": last,
                  "full_years": _full_years(first, last), "cells": None, "too_large": False}
@@ -230,14 +210,13 @@ def available(bbox, place, start, end):
             grid = variable["grid"]
             cells = cells_on[grid] = cells_on.get(grid) or _cells(grid, box, town)
             entry["cells"] = len(cells)
-            if variable["source"] != "NASA POWER" and len(cells) > MAX_UNSAVED_CELLS:   # the same limit a fetch would hit
+            if variable["source"] != "NASA POWER" and len(cells) > MAX_UNSAVED_CELLS:
                 entry["too_large"] = len(cells) - store.count(variable["id"], cells) > MAX_UNSAVED_CELLS
         listed.append(entry)
     return {"variables": listed, "reason": None}
 
 
 def answer(variable, bbox, place, start, end):
-    """(HTTP status, body) for one series request; raises HTTPException with a plain sentence."""
     if variable not in series.VARIABLES:
         raise HTTPException(404, "Unknown variable.")
     variable = series.VARIABLES[variable]
@@ -245,7 +224,7 @@ def answer(variable, bbox, place, start, end):
     if (bbox is None) == (place is None):
         raise HTTPException(400, "Give either a box or a place.")
     if bbox is not None:
-        _box(bbox)   # a malformed box is reported before anything else about the request
+        _box(bbox)
     _period(start, end)
     location, box, town = _where(bbox, place)
     cells = _cells(grid, box, town)
@@ -254,20 +233,18 @@ def answer(variable, bbox, place, start, end):
     from_saved = len(saved) == len(cells)
     if not from_saved:
         with _changed:
-            # One fetch per variable at a time. While one runs, a request only waits: asking again every few
-            # seconds must not start a second fetch for cells that have just failed.
             watched = {_inflight[(vid, cell)] for cell in cells if (vid, cell) in _inflight}
             started, checked, deadline = False, False, time.monotonic() + WAIT_SECONDS
             while True:
                 busy = any(fetch.variable == vid for fetch in _active)
                 mine_landed = not any((vid, cell) in _inflight for cell in cells)
                 if not busy or (mine_landed and (started or watched) and not checked):
-                    saved, checked = saving.get(vid, cells), busy   # read again under the lock; once while busy
+                    saved, checked = saving.get(vid, cells), busy
                     unsaved = [cell for cell in cells if cell not in saved]
                     if not unsaved or (not busy and (started or any(fetch.error for fetch in watched))):
                         break
                     if not busy:
-                        watched.add(_start(variable, unsaved))   # raises the refusals
+                        watched.add(_start(variable, unsaved))
                         started = True
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
@@ -278,7 +255,7 @@ def answer(variable, bbox, place, start, end):
         if len(saved) < len(cells):
             if busy:
                 return 202, {"status": "fetching", "cells_total": len(cells), "cells_saved": len(saved)}
-            failed = next((fetch for fetch in watched if fetch.error), None)   # the fetch is over, so what is missing failed
+            failed = next((fetch for fetch in watched if fetch.error), None)
             raise HTTPException(503 if failed and failed.refused else 502, failed.error if failed else FAILED)
 
     months, values, used = series.window(*series.average(saved), start, end)

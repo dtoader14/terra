@@ -1,4 +1,3 @@
-"""Every NASA call for time series, and the two logins. Nothing here logs or returns a password or a token."""
 import os
 import threading
 import time
@@ -7,16 +6,15 @@ import httpx
 import numpy as np
 
 from nasa import NasaClient, NasaError
+from series import _index
 
 GIOVANNI = "https://api.giovanni.earthdata.nasa.gov/timeseries"
 EARTHDATA_LOGIN = "https://urs.earthdata.nasa.gov/api/users/find_or_create_token"
 POWER = "https://power.larc.nasa.gov/api/temporal/monthly/regional"
-# Romania's box padded to POWER's 10 degree limit, so the cells on its edges come back too.
 POWER_BOX = {"latitude-min": "43.25", "latitude-max": "48.75", "longitude-min": "20.0", "longitude-max": "30.0"}
-REFUSAL_MEMORY = 120  # seconds a refused login is remembered, so a wrong password is not sent to NASA again and again
-now = time.time
+REFUSAL_MEMORY = 120
 _tokens, _refusals = {}, {}
-_login_lock = threading.Lock()  # the fetch workers start together: one logs in, the rest reuse its token
+_login_lock = threading.Lock()
 
 
 def _login():
@@ -32,17 +30,16 @@ def forget(name):
 
 
 def _refuse(name, message):
-    _refusals[name] = (now(), message)
+    _refusals[name] = (time.time(), message)
     return NasaError(message, authentication=True)
 
 
 def _recall(name):
-    if name in _refusals and now() - _refusals[name][0] < REFUSAL_MEMORY:
+    if name in _refusals and time.time() - _refusals[name][0] < REFUSAL_MEMORY:
         raise NasaError(_refusals[name][1], authentication=True)
 
 
 def earthdata_token():
-    """The Earthdata bearer token Giovanni wants, made from the login and kept in memory."""
     with _login_lock:
         if "earthdata" not in _tokens:
             _recall("earthdata")
@@ -55,14 +52,13 @@ def earthdata_token():
                 raise _refuse("earthdata", "NASA refused the Earthdata username or password.")
             if not response.is_success:
                 raise NasaError(f"NASA Earthdata returned HTTP {response.status_code}.")
-            _tokens["earthdata"] = (response.json()["access_token"], now())
+            _tokens["earthdata"] = (response.json()["access_token"], time.time())
         return _tokens["earthdata"][0]
 
 
 def appeears_token():
-    """AppEEARS has its own login and its tokens last a day or two: get a fresh one every 12 hours."""
     with _login_lock:
-        if "appeears" not in _tokens or now() - _tokens["appeears"][1] >= 12 * 3600:
+        if "appeears" not in _tokens or time.time() - _tokens["appeears"][1] >= 12 * 3600:
             _recall("appeears")
             try:
                 token = NasaClient.login(*_login())["token"]
@@ -70,16 +66,11 @@ def appeears_token():
                 if exc.authentication:
                     raise _refuse("appeears", "NASA refused the Earthdata username or password.") from None
                 raise
-            _tokens["appeears"] = (token, now())
+            _tokens["appeears"] = (token, time.time())
         return _tokens["appeears"][0]
 
 
-def _index(month):
-    return int(month[:4]) * 12 + int(month[5:7]) - 1
-
-
 def _run(months):
-    """A NaN-filled array running month by month from the first to the last of {month: value}."""
     first = min(months)
     values = np.full(_index(max(months)) - _index(first) + 1, np.nan)
     for month, value in months.items():
@@ -88,7 +79,6 @@ def _run(months):
 
 
 def parse_giovanni(text):
-    """((lat, lon) of the cell centre, first month, values) from Giovanni's CSV answer."""
     header, months, in_data = {}, {}, False
     for line in text.splitlines():
         line = line.strip()
@@ -105,7 +95,7 @@ def parse_giovanni(text):
     try:
         cell = float(header["lat"]), float(header["lon"])
     except (KeyError, ValueError):
-        cell = None  # not Giovanni's header: the caller decides what that means
+        cell = None
     if not months:
         return cell, "", np.array([])
     if header.get("undef"):
@@ -115,12 +105,10 @@ def parse_giovanni(text):
 
 
 def _refused(response):
-    # Giovanni answers an unusable token with 401/403, or with a 500 that carries this header.
     return response.status_code in (401, 403) or response.headers.get("x-amzn-errortype") == "AuthorizerConfigurationException"
 
 
 def giovanni_cell(variable, lat, lon):
-    """One grid cell's whole record. A refused token is renewed once; trouble is tried three times."""
     params = {"data": variable["id"].removeprefix("gio:"), "location": f"[{lat},{lon}]",
               "time": f"{variable['begin']}T00:00:00/{variable['end']}T23:59:59"}
     refusals = trouble = 0
@@ -143,8 +131,6 @@ def giovanni_cell(variable, lat, lon):
                 cell, first, values = parse_giovanni(response.text)
             except ValueError:
                 cell = None
-            # Only NASA's own header and Timestamp line make an answer data. A maintenance page saved as
-            # "this cell is empty" would hide the place for good.
             if cell is None or "Timestamp" not in response.text:
                 raise NasaError("NASA Giovanni sent an answer that is not data. Please try again shortly.")
             return ((lat, lon), variable["first_month"], values) if not len(values) else (cell, first, values)
@@ -157,7 +143,6 @@ def giovanni_cell(variable, lat, lon):
 
 
 def power_cells(parameter):
-    """Every grid cell of one POWER variable around Romania, in one call: {(lat, lon): (first month, values)}."""
     params = {**POWER_BOX, "parameters": parameter, "community": "AG", "start": "1981", "end": "2025", "format": "JSON"}
     try:
         with httpx.Client(timeout=120, follow_redirects=False) as client:
@@ -173,11 +158,10 @@ def power_cells(parameter):
     cells = {}
     for feature in features:
         lon, lat = feature["geometry"]["coordinates"][:2]
-        # Keys are YYYYMM; YYYY13 is the yearly mean; -999 marks a missing month.
         months = {f"{key[:4]}-{key[4:]}": float("nan") if value == -999 else value
                   for key, value in feature["properties"]["parameter"][parameter].items() if not key.endswith("13")}
         if months:
             cells[(round(lat, 4), round(lon, 4))] = _run(months)
-    if not cells:  # never save "no data anywhere" on the strength of an answer that carries none
+    if not cells:
         raise NasaError("NASA POWER sent an answer with no data. Please try again shortly.")
     return cells

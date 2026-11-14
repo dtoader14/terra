@@ -5,10 +5,6 @@ from pathlib import Path
 import httpx
 
 BASE = "https://appeears.earthdatacloud.nasa.gov/api"
-# The heat-map variables. Each is one layer of a NASA product, drawn only where its quality layer passes the
-# rule named in "quality" (processing.QUALITY). "first" and "last" are the days NASA's catalogue (CMR) held over
-# Romania on 2026-11-14; None is a record still growing. NASA publishes the gap-filled products (MOD16A2GF,
-# MOD17A2HGF) after each year ends, so those stop at the last finished year.
 TEMPERATURE = dict(theme="Temperature", short="Surface temperature", quality="temperature", unit="°C", digits=1, cadence="8-day composite", resolution="1 km", palette="thermal", last=None)
 GREENNESS = dict(theme="Vegetation", quality="reliability", unit="index", digits=3, cadence="16-day composite", resolution="1 km", palette="vegetation", last=None)
 LEAVES = dict(theme="Vegetation", product="MOD15A2H.061", qa="FparLai_QC", quality="good_bit", cadence="8-day composite", resolution="500 m", palette="vegetation", first="2000-02-18", last=None)
@@ -34,7 +30,6 @@ VARIABLES = {
 
 
 def available(start=None, end=None):
-    """The variables whose record overlaps the period. Either day may be left open."""
     return [{"id": key, **variable} for key, variable in VARIABLES.items()
             if (end is None or variable["first"] <= end.isoformat()) and (start is None or variable["last"] is None or start.isoformat() <= variable["last"])]
 
