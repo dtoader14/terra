@@ -239,5 +239,3 @@ $('explore-form').addEventListener('submit', event => {
 }, true);
 
 setMode('heat');
-// app.js fetches /api/config; wait for it instead of asking twice.
-const publicCheck = setInterval(() => { if (config) { clearInterval(publicCheck); $('admin-link').hidden = Boolean(config.public); } }, 200);

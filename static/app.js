@@ -75,10 +75,7 @@ async function api(path, options={}) {
   return data;
 }
 function updateService(provider){
-  const labels={ready:'NASA data available',unconfigured:'Awaiting admin setup',paused:'Data service paused',expired:'Data service needs attention',attention:'Data service needs attention'};
   config.provider=provider;
-  $('service-label').textContent=labels[provider.state]||'Data service unavailable';
-  $('service-badge').classList.toggle('connected',provider.available);
   $('service-note').hidden=provider.available;
   $('service-note').textContent=provider.message;
   if(!activeJob) setStatus(provider.available?'Ready to explore':'Plan your exploration',provider.message);
@@ -181,6 +178,3 @@ async function init(){
   catch(error){setStatus('Server connection needed',error.message,'error');}
 }
 init();
-
-// Keep visitor-facing availability current after an administrator changes the connection.
-setInterval(async()=>{if(document.hidden)return;try{const current=await api('/api/config');if(config)updateService(current.provider);}catch{/* Existing status remains until the next successful check. */}},30000);
