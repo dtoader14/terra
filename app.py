@@ -4,7 +4,6 @@ import threading
 import time
 from datetime import date, datetime, timezone
 from pathlib import Path
-from typing import Literal
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, Response
@@ -17,7 +16,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 import fetching
 import series
 import sources
-from nasa import VARIABLES, NasaClient, NasaError, task_payload
+from nasa import VARIABLES, NasaClient, NasaError, available, task_payload
 from processing import process_bundle
 from platform_settings import Settings, utc_now
 
@@ -90,7 +89,7 @@ class ConnectionState(BaseModel):
 
 
 class Query(BaseModel):
-    variable: Literal["lst_day", "lst_night", "ndvi", "evi"]
+    variable: str
     start: date
     end: date
     bbox: tuple[float, float, float, float]
@@ -98,6 +97,8 @@ class Query(BaseModel):
     @model_validator(mode="after")
     def validate_query(self):
         import math
+        if self.variable not in VARIABLES:
+            raise ValueError("Choose one of the listed variables.")
         w, s, e, n = self.bbox
         if not all(math.isfinite(x) for x in self.bbox) or not (-180 <= w < e <= 180 and -85 <= s < n <= 85):
             raise ValueError("Use west < east and south < north; latitude must be within ±85°. Split regions crossing the date line.")
@@ -109,6 +110,9 @@ class Query(BaseModel):
             raise ValueError("Select an ordered date range of at most 93 inclusive days.")
         if self.start < date(2000, 2, 24) or self.end > date.today():
             raise ValueError("Use dates between 24 February 2000 and today. Recent observations may not yet be published.")
+        if all(variable["id"] != self.variable for variable in available(self.start, self.end)):
+            variable = VARIABLES[self.variable]
+            raise ValueError(f"{variable['label']} has no data in this period. NASA's record runs from {variable['first']} to {variable['last'] or 'today'}.")
         return self
 
 
@@ -351,6 +355,14 @@ def get_file(job_id: str, name: str, request: Request, download: bool = False):
     if name not in allowed:
         raise HTTPException(404, "File not found.")
     return FileResponse(DATA / job_id / name, filename=f"earth-{job['query']['variable']}-{name}" if download else None)
+
+
+@app.get("/api/variables")
+def variables(start: date | None = None, end: date | None = None):
+    """The heat-map variables that have data in the period; all of them when no period is given."""
+    if start and end and start > end:
+        raise HTTPException(400, "The start date is after the end date.")
+    return {"variables": available(start, end), "total": len(VARIABLES)}
 
 
 @app.get("/api/series/variables")

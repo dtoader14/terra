@@ -17,6 +17,25 @@ from nasa import NasaError
 PALETTES = {
     "thermal": ["#293e83", "#397cb8", "#62c6c1", "#f3df83", "#ed9555", "#b9384c"],
     "vegetation": ["#865c46", "#c5a96e", "#e8df9c", "#a2c888", "#4a9e73", "#126253"],
+    "water": ["#f6f1df", "#cfe6cf", "#8fd0c4", "#4aa7c7", "#2f6fb0", "#27408b"],
+}
+
+
+def _temperature(quality):
+    qa = np.nan_to_num(quality, nan=255).astype(np.uint16)
+    return ((qa & 3) == 0) & (((qa >> 2) & 3) == 0) & (((qa >> 6) & 3) == 0)
+
+
+def _good_bit(quality):
+    return (np.nan_to_num(quality, nan=255).astype(np.uint16) & 1) == 0  # the quality layer's own fill is 255
+
+
+# Which pixels are drawn, by the quality layer's kind: (the test, how the metadata words it).
+# NASA's tables for each layer: AppEEARS /api/quality/<product>/<quality layer>.
+QUALITY = {
+    "temperature": (_temperature, "mandatory QA=0, data quality=0, LST error bits=0 (<=1 K)"),  # MOD11, MYD11
+    "reliability": (lambda quality: quality == 0, "pixel reliability=0 (good data)"),            # MOD13, MYD13
+    "good_bit": (_good_bit, "bit 0=0 (good quality, main algorithm)"),                           # MOD15, MOD16, MOD17
 }
 
 
@@ -66,12 +85,7 @@ def unpack_and_mask(raw, quality, metadata, variable, scale=1, offset=0, nodata=
     for key, op in (("OrigValidMin", np.greater_equal), ("OrigValidMax", np.less_equal)):
         if metadata.get(key) not in (None, ""):
             valid &= op(raw, float(metadata[key]))
-    if variable["product"].startswith("MOD11"):
-        qa = np.nan_to_num(quality, nan=255).astype(np.uint16)
-        # Mandatory QA=good, data quality=good, estimated LST error <=1 K.
-        valid &= ((qa & 3) == 0) & (((qa >> 2) & 3) == 0) & (((qa >> 6) & 3) == 0)
-    else:
-        valid &= quality == 0  # MOD13 pixel reliability: good data only.
+    valid &= QUALITY[variable["quality"]][0](quality)
     result = raw.astype(np.float32) * scale + offset
     if variable["unit"] == "°C":
         result -= 273.15
@@ -164,7 +178,7 @@ def process_bundle(client, job, directory, update):
         "frames": frame_info, "sources": sources, "layer_metadata": metadata,
         "grid": {"crs": "EPSG:3857", "width": grid["width"], "height": grid["height"]},
         "method": "Nearest-neighbour sampling onto a display grid of at most 640 pixels per side. Arithmetic mean of available good-quality source composites, equally weighted; no interpolation or gap filling. Composite dates are start dates and may represent observations outside the requested endpoints. Statistics describe the display grid, not an area-weighted regional estimate.",
-        "quality": "MOD11: mandatory QA=0, data quality=0, LST error bits=0 (<=1 K). MOD13: pixel reliability=0 (good). Fill and out-of-range values excluded.",
+        "quality": f"{variable['product']} {variable['qa']}: {QUALITY[variable['quality']][1]}. Fill and out-of-range values excluded.",
     }
     (directory / "metadata.json").write_text(json.dumps(result, indent=2, ensure_ascii=False))
     return result
