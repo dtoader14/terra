@@ -5,5 +5,10 @@
 !nasa.py
 !processing.py
 !platform_settings.py
+!series.py
+!sources.py
+!fetching.py
+!variables.csv
+!places.tsv
 !static/
 !static/**

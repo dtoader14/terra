@@ -1,6 +1,6 @@
 # Terra — Earth Data Explorer
 
-A local web application for heat maps of real NASA satellite observations, with region, date, and variable controls. Python/FastAPI handles NASA authentication and raster processing; Leaflet provides the interactive map. No forecast, synthetic demo data, or gap-filling model is used by the application.
+A local web application with two views of NASA Earth data. **Heat map** draws real satellite observations for a region and period. **Time series** shows how a variable changed over the years at a town or box in Romania, with its rate of change and whether that change is statistically significant. Python/FastAPI handles the NASA login, fetching and processing; Leaflet provides the interactive map. No forecast, synthetic demo data or gap filling is used. Time series also offer NASA model products, and every variable is labelled as a satellite measurement or a model product.
 
 ## Run on this laptop
 
@@ -22,9 +22,9 @@ docker compose up -d --wait   # Start it again
 docker compose down          # Remove the container, keeping result files
 ```
 
-NASA credentials are managed only in the [admin dashboard](http://127.0.0.1:8000/admin). Docker excludes `.env`, the local virtual environment, tests, and generated files from its build context. Tokens are saved through the dashboard and never baked into the image. There is no per-user NASA login or environment-token fallback.
+The NASA login comes from a `.env` file beside `compose.yaml` (see [NASA login](#nasa-login)); Docker Compose passes it to the container when it starts. Docker excludes `.env`, the local virtual environment, tests, and generated files from its build context, so the login is never baked into the image. With no login in `.env`, heat maps fall back to a token saved in the [admin dashboard](http://127.0.0.1:8000/admin).
 
-Generated results persist in the Docker volume `earth-data-explorer_results` at `/app/data`. Sessions and task history remain in memory, so download results before restarting. Do not use `docker compose down -v` unless you intend to delete the saved Docker results. The host's `data/` folder is separate from this Docker volume.
+Generated results persist in the Docker volume `earth-data-explorer_results` at `/app/data`. The grid cells saved for time series (`series.sqlite`) live there too. Sessions and task history remain in memory, so download results before restarting. Do not use `docker compose down -v` unless you intend to delete the saved Docker results. The host's `data/` folder is separate from this Docker volume.
 
 ### Without Docker
 
@@ -44,7 +44,25 @@ If port 8000 is in use:
 
 Use `127.0.0.1` consistently; `localhost` is a separate browser cookie origin.
 
+## NASA login
+
+Copy `.env.example` to `.env` and fill in your free [NASA Earthdata](https://urs.earthdata.nasa.gov/users/new) username and password:
+
+```
+EARTHDATA_USERNAME=...
+EARTHDATA_PASSWORD=...
+```
+
+That one login serves both views. The server uses it to log in to AppEEARS for heat maps, and to ask Earthdata for the bearer token Giovanni needs for time series. Both tokens are kept in memory only. The login is never logged, never returned by any address and never written to disk by the app. `.env` is ignored by Git and left out of the Docker image.
+
+- Use a password you use nowhere else: it opens your whole Earthdata account.
+- The account must have accepted the "NASA GESDISC DATA ARCHIVE" application once ([how](https://disc.gsfc.nasa.gov/earthdata-login)), or Giovanni refuses it.
+- With no login set, POWER time series still work (POWER needs no login), Giovanni time series answer only from grid cells already saved, and heat maps use the admin dashboard described next.
+
 ## Administrator setup and shared NASA access
+
+Only needed when no login is set in `.env`.
+
 
 1. Open **http://127.0.0.1:8000/admin**. On the first visit, create the local administrator password (at least 12 characters). The one-time setup closes after the first administrator is created.
 2. In **Data connection**, paste a token returned by the official [NASA AppEEARS `/api/login` service](https://appeears.earthdatacloud.nasa.gov/api/), without the `Bearer` prefix. A generic Earthdata user token is not interchangeable. If needed, create an [Earthdata account](https://urs.earthdata.nasa.gov/users/new) and complete the initial [AppEEARS](https://appeears.earthdatacloud.nasa.gov/) account setup first.
@@ -67,11 +85,18 @@ AppEEARS tokens typically expire after approximately 48 hours. Replace them thro
 3. Watch processing status while NASA prepares the data. Requests may take several minutes. If the data service is unavailable, contact the administrator; no user credential form is shown.
 4. View the period mean or individual composites, adjust opacity, and download PNG, GeoTIFF, or metadata.
 
+For a time series, switch to **Time series**:
+
+1. Search for a variable. Each one says whether it is a satellite measurement or a model product.
+2. Type a town in Romania and pick it from the list, or select a box.
+3. Optionally set a first and last month, then click **Show time series**.
+4. Read the chart: the thin line is the monthly values, the dots are yearly means, the straight line is the trend. Below it are the rate of change per decade, its p-value and whether it is significant.
+
 Browser reloads reconnect to the current session's latest extraction. Download results before the server restarts, because job history is still kept in memory.
 
 ## Implemented data source
 
-The active provider is the official [NASA AppEEARS API](https://appeears.earthdatacloud.nasa.gov/api/), one of the requested NASA services. The app checks its public catalog before submitting tasks.
+Heat maps use the official [NASA AppEEARS API](https://appeears.earthdatacloud.nasa.gov/api/), one of the requested NASA services. The app checks its public catalog before submitting tasks.
 
 | Variable | Product | Layer | Units | Source composite |
 | --- | --- | --- | --- | --- |
@@ -80,9 +105,9 @@ The active provider is the official [NASA AppEEARS API](https://appeears.earthda
 | Vegetation greenness | MOD13A2.061 | _1_km_16_days_NDVI | index | 16 days |
 | Enhanced vegetation index | MOD13A2.061 | _1_km_16_days_EVI | index | 16 days |
 
-These are approximately 1 km satellite retrieval/composite products, not raw sensor radiances and not forecasts. Land-surface temperature is different from air temperature. The app intentionally uses an allowlist of observation-derived products rather than exposing model/reanalysis products from the entire catalog.
+These are approximately 1 km satellite retrieval/composite products, not raw sensor radiances and not forecasts. Land-surface temperature is different from air temperature. Heat maps intentionally use an allowlist of observation-derived products.
 
-[Giovanni](https://giovanni.gsfc.nasa.gov/) and [NOAA CDO](https://www.ncei.noaa.gov/cdo-web/) are linked as additional resources, **not implemented providers**. NOAA's [CDO API](https://www.ncei.noaa.gov/cdo-web/webservices/v2) requires its own `token` header and provides station records; it does not share AppEEARS bearer authentication.
+Time series come from [Giovanni](https://giovanni.gsfc.nasa.gov/) and [NASA POWER](https://power.larc.nasa.gov/); see [Time series](#time-series). [NOAA CDO](https://www.ncei.noaa.gov/cdo-web/) is linked as an additional resource, **not an implemented provider**. NOAA's [CDO API](https://www.ncei.noaa.gov/cdo-web/webservices/v2) requires its own `token` header and provides station records; it does not share AppEEARS bearer authentication.
 
 ### API workflow
 
@@ -97,6 +122,28 @@ Browser → local FastAPI server → NASA AppEEARS
 ```
 
 All protected NASA calls use `Authorization: Bearer <token>`. Authorization is stripped on cross-origin redirects to S3. Downloads are checked against NASA's supplied SHA-256 checksum when present. GET calls retry transient errors; task submission is not automatically retried to avoid creating duplicate requests.
+
+## Time series
+
+Monthly series for Romania (43.6–48.3°N, 20.2–29.7°E) from two NASA sources:
+
+| Source | Variables | Login |
+| --- | --- | --- |
+| [Giovanni](https://giovanni.gsfc.nasa.gov/) point time-series API | 141 monthly variables: AIRS, GPM IMERG and TRMM (satellite); GLDAS, FLDAS and MERRA-2 (model) | Earthdata login |
+| [NASA POWER](https://power.larc.nasa.gov/) monthly regional API | 213 monthly variables: weather values from MERRA-2 (model); sunlight and cloud values from CERES (satellite) | none |
+
+```
+GET /api/series/variables                    the offered variables
+GET /api/places?q=alba                       Romanian towns matching a text
+GET /api/series?variable=power:T2MDEW&place=686578&start=2000-01&end=2025-12
+GET /api/series?variable=gio:AIRS3STM_7_0_SurfAirTemp_A&bbox=23.0,45.8,24.2,46.6
+```
+
+- A town is the one grid cell that contains it. A box (`west,south,east,north`) is the mean of every grid cell whose centre lies inside it, each weighted by the cosine of its latitude. The answer says how many cells were used and on which grid.
+- The server keeps every grid cell it fetched in `data/series.sqlite`, so each cell is fetched from NASA once. While cells are being fetched the address answers 202 with a count, and the page asks again.
+- The trend is a least-squares line through the yearly means of complete calendar years, and needs at least 10 of them. The answer gives the slope per decade, its 95% range, the p-value of the slope (t-test) and the Mann-Kendall p-value. "Significant" means the slope's p-value is below 0.05. Yearly means are used so the seasonal cycle does not drive the result.
+- Values are in NASA's own units (kelvin, kg m-2 s-1, and so on). The variable list carries a plain-language hint for each.
+- Limits: Romania only; at most 800 unsaved grid cells per request; two fetches at a time; 20,000 Giovanni calls a day.
 
 ## How the heat map is calculated
 
@@ -118,6 +165,19 @@ All protected NASA calls use `Authorization: Bearer <token>`. Authorization is s
 - This is a **single-laptop app**, bound to `127.0.0.1`. It has same-origin mutation checks, host validation, and session ownership checks. Public deployment would need HTTPS, durable authentication/task storage, resource quotas, and a production worker queue.
 - Leaflet is bundled locally with its license. OpenStreetMap or Esri basemap tiles and Google Fonts require internet. Basemap failure does not substitute data or prevent manual coordinate entry. Standard OSM tiles are for interactive local viewing under the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/); there is no bulk download or offline prefetch.
 
+## Deploying
+
+The image runs on any host that builds a `Dockerfile`. Set these on the host, never in the repository:
+
+| Setting | Value |
+| --- | --- |
+| `EARTHDATA_USERNAME`, `EARTHDATA_PASSWORD` | the NASA login |
+| `TERRA_PUBLIC` | `1` |
+| `ALLOWED_HOSTS` | the public host name, for example `terra.onrender.com` |
+| `PORT` | only if the host does not set it; the server listens on it (default 8000) |
+
+`TERRA_PUBLIC=1` switches `/admin` and every `/api/admin/` address off, because on a public link the first visitor could otherwise set the admin password. Heat maps and time series stay on and use the login from the environment. A public link lets strangers use that NASA login through the app, within the limits listed above. On a host without a persistent disk, saved series and finished heat maps are lost on every restart.
+
 ## Development and checks
 
 ```bash
@@ -128,7 +188,7 @@ node --check static/app.js
 
 `requirements-lock.txt` records the exact environment used for validation, including the test dependency. `requirements.txt` contains the supported runtime ranges.
 
-Tests cover query bounds/dates, NASA payload formatting, scaling exactly once, QA rejection, QA zero handling, missing-pixel averaging, transparent rendering, the download-to-GeoTIFF pipeline, bearer headers, cross-origin header stripping, expiration errors, CSRF checks, and session isolation. Artificial fixtures exist only in tests and are never offered as NASA observations.
+Tests cover query bounds/dates, NASA payload formatting, scaling exactly once, QA rejection, QA zero handling, missing-pixel averaging, transparent rendering, the download-to-GeoTIFF pipeline, bearer headers, cross-origin header stripping, expiration errors, CSRF checks, and session isolation. Artificial fixtures exist only in tests and are never offered as NASA observations. Time-series tests cover grid cells, area-weighted averaging, the trend numbers against a hand-checked example, town matching, the format of both NASA answers (one real Giovanni answer is kept as a fixture), fetching, the limits, the environment login and public mode. No test calls NASA or reads `.env`.
 
 Validation performed during development: The original raster suite passed; public NASA product metadata was fetched live. Admin access controls, shared-token routing, persistence, credential replacement, and visitor isolation are covered by the current test suite. **Authenticated NASA task submission and a real completed raster download have not been verified**, because no user credentials were provided. There is no demo fallback. Use the first authenticated extraction to verify the full live workflow.
 
@@ -138,9 +198,21 @@ Validation performed during development: The original raster suite passed; publi
 app.py           Local API, visitor/admin sessions, shared-token jobs
 platform_settings.py  Persistent administrator hash and NASA connection
 nasa.py          Official NASA API client and variable allowlist
+series.py        Time-series maths, the offered variables, town lookup
+sources.py       Giovanni and POWER calls, the two NASA logins
+fetching.py      Saved grid cells, fetching and its limits
+variables.csv    The offered time-series variables
+places.tsv       Romanian towns, from GeoNames
 processing.py    Quality filtering, scaling, projection, compositing, export
 static/          Responsive frontend and bundled Leaflet
 tests/           Isolated calculation and integration tests
 start.sh         Local launcher
 data/            Generated results (ignored by Git)
 ```
+
+## Data credits
+
+- Heat maps: NASA AppEEARS (LP DAAC), MODIS Terra Collection 6.1.
+- Time series: NASA Giovanni (GES DISC) and NASA POWER (Langley Research Center).
+- Town names: [GeoNames](https://www.geonames.org/), licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+- Map: Leaflet (bundled with its licence); basemap tiles from OpenStreetMap contributors and Esri.

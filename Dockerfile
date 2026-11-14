@@ -14,11 +14,12 @@ RUN apt-get update \
     && mkdir -p /app/data \
     && chown earth:earth /app/data
 
-COPY app.py nasa.py processing.py platform_settings.py ./
+COPY app.py nasa.py processing.py platform_settings.py series.py sources.py fetching.py variables.csv places.tsv ./
 COPY static/ ./static/
 
 USER earth
 EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3).close()"
-CMD ["python", "-m", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+    CMD python -c "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:%s/api/health' % os.environ.get('PORT', '8000'), timeout=3).close()"
+# Hosts such as Render tell the server which port to listen on through PORT.
+CMD ["sh", "-c", "exec python -m uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000}"]

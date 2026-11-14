@@ -5,6 +5,9 @@ services:
     image: earth-data-explorer:local
     ports:
       - "127.0.0.1:8000:8000"
+    env_file:
+      - path: .env
+        required: false
     volumes:
       - results:/app/data
     restart: unless-stopped
