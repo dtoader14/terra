@@ -1,4 +1,5 @@
 """The NASA login taken from the environment, and public mode. No real login or NASA call is used."""
+import re
 from types import SimpleNamespace
 
 import pytest
@@ -94,3 +95,21 @@ LEAKED = bool(__import__("os").environ.get("EARTHDATA_PASSWORD"))        # read 
 
 def test_the_real_login_never_reaches_the_test_run():
     assert LEAKED is False                                               # importing app loads .env; conftest must stop it first
+
+
+def test_the_page_asks_for_place_then_period_then_variable_and_is_about_romania_only():
+    page = (server.ROOT / "static" / "index.html").read_text()
+    script = (server.ROOT / "static" / "app.js").read_text()
+    assert page.index("Set your place") < page.index("Pick a time period") < page.index("Choose a variable")
+    assert 'id="region"' not in page and 'id="place-search"' in page
+    assert page.index('id="place-search"') < page.index('id="draw-button"') < page.index('id="west"')
+    for elsewhere in ("California", "Amazon", "Alps", "california", "amazon", "alps"):
+        assert elsewhere not in page and elsewhere not in script
+
+
+def test_every_element_the_page_scripts_look_up_is_on_the_page():
+    page = (server.ROOT / "static" / "index.html").read_text()
+    for name in ("app.js", "series.js"):
+        script = (server.ROOT / "static" / name).read_text()
+        for element in sorted(set(re.findall(r"\$\('([\w-]+)'\)", script) + re.findall(r"\['west', 'south', 'east', 'north'(?:, '([\w-]+)')+\]", script))):
+            assert f'id="{element}"' in page, f"{name} looks up #{element}, which is not on the page"

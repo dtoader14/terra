@@ -1,9 +1,10 @@
 'use strict';
-// Time-series mode: a variable, a town or a box in Romania and a period give a chart and a trend.
-// Uses $, api, bbox and map from app.js, which loads first. It keeps its own status line: app.js rewrites
-// the heat-map one every 30 seconds.
+// The place search (both modes) and the time-series mode: a place in Romania, a period and a variable
+// give a chart and a trend. Uses $, api, bbox, setBounds, placeName and map from app.js, which loads first.
+// The mode keeps its own status line: app.js rewrites the heat-map one every 30 seconds.
 const SVG = 'http://www.w3.org/2000/svg';
-let seriesVariables = [], seriesPlace = null, placeMarker = null, placeTimer = null, seriesTimer = null, seriesRun = 0;
+let seriesVariables = [], seriesReason = null, seriesPlace = null, placeMarker = null, placeTimer = null, seriesTimer = null, seriesRun = 0;
+let variablesTimer = null, variablesRun = 0;
 
 function seriesStatus(title, message, state = '') {
   $('series-status-title').textContent = title;
@@ -17,14 +18,43 @@ function setMode(mode) {
   $('mode-heat').classList.toggle('active', mode === 'heat');
   $('mode-series').classList.toggle('active', mode === 'series');
   $('series-panel').hidden = mode !== 'series' || !$('series-chart').childElementCount;
+  if (mode === 'series') loadVariables();
 }
 $('mode-heat').onclick = () => setMode('heat');
 $('mode-series').onclick = () => setMode('series');
 
 function describeVariable() {
-  const v = seriesVariables.find(v => v.id === $('series-variable').value);
-  $('series-variable-note').textContent = !v ? 'No variable matches.' :
-    `${v.source} · ${v.kind === 'satellite' ? 'satellite measurement' : 'model product'} · ${v.unit || 'no unit'} · ${v.first_month}–${v.last_month} · ${v.grid}${v.unit_hint ? ' · ' + v.unit_hint : ''}`;
+  const select = $('series-variable'), v = seriesVariables.find(v => v.id === select.value);
+  if (!v) {   // nothing to choose: say why
+    $('series-variable-note').textContent = seriesReason || (select.options.length ? 'Your box is too large for these variables. Draw a smaller box.' :
+      seriesVariables.length ? 'No variable matches your search.' : 'No variable has data for this place and period.');
+    return;
+  }
+  const years = `${v.full_years} full year${v.full_years === 1 ? '' : 's'}${v.full_years < 10 ? ', too short for a trend' : ''}`;
+  $('series-variable-note').textContent =
+    `${v.source} · ${v.kind === 'satellite' ? 'satellite measurement' : 'model product'} · ${v.unit || 'no unit'} · ${v.grid}${v.unit_hint ? ' · ' + v.unit_hint : ''}` +
+    ` · data from ${v.available_from} to ${v.available_to} (${years})`;
+}
+// The list follows the place and the period: the server says which variables have data there and then.
+function placeQuery() {
+  const query = new URLSearchParams();
+  if (seriesPlace) query.set('place', seriesPlace.id); else query.set('bbox', bbox().join(','));
+  if ($('series-start').value) query.set('start', $('series-start').value);
+  if ($('series-end').value) query.set('end', $('series-end').value);
+  return query;
+}
+function loadVariables() {
+  if (document.body.dataset.mode !== 'series') return;
+  clearTimeout(variablesTimer);
+  variablesTimer = setTimeout(async () => {
+    const run = ++variablesRun;
+    try {
+      const data = await api('/api/series/variables?' + placeQuery());
+      if (run === variablesRun) { seriesVariables = data.variables; seriesReason = data.reason; showVariables(); }
+    } catch (error) {
+      if (run === variablesRun) { seriesVariables = []; seriesReason = error.message; showVariables(); }
+    }
+  }, 300);
 }
 function showVariables() {
   const text = $('series-filter').value.trim().toLowerCase(), chosen = $('series-variable').value, themes = new Map();
@@ -36,30 +66,47 @@ function showVariables() {
   $('series-variable').replaceChildren(...[...themes].sort().map(([theme, list]) => {
     const group = document.createElement('optgroup');
     group.label = theme;
-    group.append(...list.map(v => new Option(`${v.name} · ${v.product}`, v.id)));
+    group.append(...list.map(v => {
+      const option = new Option(v.too_large ? `${v.name} · ${v.product} · box too large` : `${v.name} · ${v.product}`, v.id);
+      option.disabled = v.too_large;   // more than 800 unsaved grid cells: the server would refuse it
+      option.title = v.too_large ? `This box needs ${v.cells} grid cells for this variable. Draw a smaller box.` : '';
+      return option;
+    }));
     return group;
   }));
-  const options = [...$('series-variable').options];
-  if (options.some(option => option.value === chosen)) $('series-variable').value = chosen; else if (options.length) $('series-variable').selectedIndex = 0;
+  const options = [...$('series-variable').options].filter(option => !option.disabled);
+  $('series-variable').value = options.some(option => option.value === chosen) ? chosen : options.length ? options[0].value : '';
   describeVariable();
 }
 $('series-filter').oninput = showVariables;
 $('series-variable').onchange = describeVariable;
+$('series-start').onchange = $('series-end').onchange = loadVariables;
+document.addEventListener('terra-box', () => {   // app.js says the box changed
+  // A box made by hand (app.js names it 'Custom box') replaces the chosen city or county.
+  if (seriesPlace && placeName !== placeLabel(seriesPlace)) { forgetPlace(); $('place-search').value = ''; }
+  loadVariables();
+});
 
+function placeNote(text) {
+  const note = document.createElement('p');
+  note.className = 'field-note'; note.textContent = text;
+  $('place-results').replaceChildren(note);
+}
 function forgetPlace() {
   seriesPlace = null;
   if (placeMarker) { map.removeLayer(placeMarker); placeMarker = null; }
 }
+function placeLabel(place) { return place.kind === 'county' ? `${place.name} county` : `${place.name}, ${place.county}`; }
 function choosePlace(place) {
   forgetPlace();
   seriesPlace = place;
-  $('place-search').value = `${place.name}, ${place.county}`;
+  $('place-search').value = placeLabel(place);
   $('place-results').replaceChildren();
-  placeMarker = L.circleMarker([place.lat, place.lon], {radius: 7, color: '#244f46', weight: 2, fillColor: '#d5eaaa', fillOpacity: 0.9}).addTo(map);
-  map.setView([place.lat, place.lon], Math.max(map.getZoom(), 9));
+  if (place.kind === 'town') placeMarker = L.circleMarker([place.lat, place.lon], {radius: 7, color: '#244f46', weight: 2, fillColor: '#d5eaaa', fillOpacity: 0.9}).addTo(map);
+  placeName = placeLabel(place);
+  setBounds(place.bbox);   // a county is the box around its towns; a town gets half a degree around it for heat maps
 }
-$('place-search').oninput = () => {
-  forgetPlace();
+$('place-search').oninput = () => {   // the chosen place stays until another one is picked
   clearTimeout(placeTimer);
   const text = $('place-search').value.trim();
   if (!text) { $('place-results').replaceChildren(); return; }
@@ -69,16 +116,14 @@ $('place-search').oninput = () => {
       if ($('place-search').value.trim() !== text) return;
       $('place-results').replaceChildren(...places.map(place => {
         const button = document.createElement('button');
-        button.type = 'button'; button.textContent = `${place.name}, ${place.county}`; button.onclick = () => choosePlace(place);
+        button.type = 'button'; button.onclick = () => choosePlace(place);
+        button.textContent = place.kind === 'county' ? `${place.name} county · the box around it` : `${place.name}, ${place.county}`;
         return button;
       }));
-      if (!places.length) { const note = document.createElement('p'); note.className = 'field-note'; note.textContent = 'No town found. Try another spelling, or use a box.'; $('place-results').append(note); }
-    } catch (error) { seriesStatus('Town search failed', error.message, 'error'); }
+      if (!places.length) placeNote('No city or county found. Try another spelling, or use a box.');
+    } catch (error) { placeNote(error.message); }
   }, 250);
 };
-// A box and a town are two different choices: touching the box forgets the town.
-['west', 'south', 'east', 'north', 'region'].forEach(id => $(id).addEventListener('change', () => { forgetPlace(); $('place-search').value = ''; }));
-$('draw-button').addEventListener('click', () => { forgetPlace(); $('place-search').value = ''; });
 
 function part(name, attributes, text) {
   const node = document.createElementNS(SVG, name);
@@ -91,7 +136,8 @@ function pText(value) { return value < 0.001 ? 'p < 0.001' : `p = ${digits(value
 
 function drawSeries(data) {
   const chart = $('series-chart'), unit = data.variable.unit || '', cells = data.location.cells;
-  const where = data.location.type === 'place' ? `${data.location.name}, ${data.location.county}` : 'Selected box';
+  const where = data.location.type === 'place' ? `${data.location.name}, ${data.location.county}` :
+    data.location.type === 'county' ? `${data.location.name} county (the box around it)` : 'Selected box';
   chart.replaceChildren();
   $('series-panel').hidden = document.body.dataset.mode !== 'series';
   const shown = data.points.filter(point => point.value !== null);
@@ -151,11 +197,9 @@ async function askSeries(run, query) {
 }
 function showSeries() {
   const variable = $('series-variable').value;
-  if (!variable) { seriesStatus('Check your request', 'Choose a variable first.', 'error'); return; }
-  const query = new URLSearchParams({variable});
-  if (seriesPlace) query.set('place', seriesPlace.id); else query.set('bbox', bbox().join(','));
-  if ($('series-start').value) query.set('start', $('series-start').value);
-  if ($('series-end').value) query.set('end', $('series-end').value);
+  if (!variable) { seriesStatus('Check your request', $('series-variable-note').textContent || 'Choose a variable first.', 'error'); return; }   // the note says why none can be chosen
+  const query = placeQuery();
+  query.set('variable', variable);
   clearTimeout(seriesTimer);
   $('series-button').disabled = true;
   seriesStatus('Looking up your series', 'Checking what is already saved.', 'busy');
@@ -169,7 +213,5 @@ $('explore-form').addEventListener('submit', event => {
 }, true);
 
 setMode('heat');
-api('/api/series/variables').then(data => { seriesVariables = data.variables; showVariables(); })
-  .catch(error => seriesStatus('Server connection needed', error.message, 'error'));
 // app.js fetches /api/config; wait for it instead of asking twice.
 const publicCheck = setInterval(() => { if (config) { clearInterval(publicCheck); $('admin-link').hidden = Boolean(config.public); } }, 200);

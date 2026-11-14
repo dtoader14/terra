@@ -80,16 +80,16 @@ AppEEARS tokens typically expire after approximately 48 hours. Replace them thro
 
 ## Use the explorer
 
-1. Select a variable and region using presets, coordinates, or two map clicks.
-2. Choose a date range and click **Generate heat map**.
+1. Set your place: search a city or county in Romania, select two corners on the map, or type coordinates.
+2. Choose a date range and a variable, and click **Generate heat map**.
 3. Watch processing status while NASA prepares the data. Requests may take several minutes. If the data service is unavailable, contact the administrator; no user credential form is shown.
 4. View the period mean or individual composites, adjust opacity, and download PNG, GeoTIFF, or metadata.
 
 For a time series, switch to **Time series**:
 
-1. Search for a variable. Each one says whether it is a satellite measurement or a model product.
-2. Type a town in Romania and pick it from the list, or select a box.
-3. Optionally set a first and last month, then click **Show time series**.
+1. Set your place: a city, a county or a box.
+2. Optionally set a first and last month.
+3. Pick a variable. The list shows only variables with data for that place and period, and each one says whether it is a satellite measurement or a model product. Then click **Show time series**.
 4. Read the chart: the thin line is the monthly values, the dots are yearly means, the straight line is the trend. Below it are the rate of change per decade, its p-value and whether it is significant.
 
 Browser reloads reconnect to the current session's latest extraction. Download results before the server restarts, because job history is still kept in memory.
@@ -134,12 +134,14 @@ Monthly series for Romania (43.6–48.3°N, 20.2–29.7°E) from two NASA source
 
 ```
 GET /api/series/variables                    the offered variables
-GET /api/places?q=alba                       Romanian towns matching a text
+GET /api/series/variables?place=county:Cluj&start=1990-01&end=2020-12
+                                             only those with data for that place and period
+GET /api/places?q=alba                       Romanian towns and counties matching a text
 GET /api/series?variable=power:T2MDEW&place=686578&start=2000-01&end=2025-12
 GET /api/series?variable=gio:AIRS3STM_7_0_SurfAirTemp_A&bbox=23.0,45.8,24.2,46.6
 ```
 
-- A town is the one grid cell that contains it. A box (`west,south,east,north`) is the mean of every grid cell whose centre lies inside it, each weighted by the cosine of its latitude. The answer says how many cells were used and on which grid.
+- A town is the one grid cell that contains it. A county is the box around all of its towns, not its exact outline. A box (`west,south,east,north`) is the mean of every grid cell whose centre lies inside it, each weighted by the cosine of its latitude. The answer says how many cells were used and on which grid.
 - The server keeps every grid cell it fetched in `data/series.sqlite`, so each cell is fetched from NASA once. While cells are being fetched the address answers 202 with a count, and the page asks again.
 - The trend is a least-squares line through the yearly means of complete calendar years, and needs at least 10 of them. The answer gives the slope per decade, its 95% range, the p-value of the slope (t-test) and the Mann-Kendall p-value. "Significant" means the slope's p-value is below 0.05. Yearly means are used so the seasonal cycle does not drive the result.
 - Values are in NASA's own units (kelvin, kg m-2 s-1, and so on). The variable list carries a plain-language hint for each.

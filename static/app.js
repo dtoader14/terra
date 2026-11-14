@@ -1,11 +1,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const regions = {
-  romania: {name: 'Southern Romania', bbox: [23, 43.5, 28, 46.5]},
-  california: {name: 'California Central Valley', bbox: [-122.5, 35, -119, 39]},
-  amazon: {name: 'Central Amazon', bbox: [-62, -5, -58, -1]},
-  alps: {name: 'The Alps', bbox: [6, 44, 13, 48]},
-};
+const START = {name: 'Southern Romania', bbox: [23, 43.5, 28, 46.5]};
+let placeName = START.name;   // shown above the map; series.js sets it when a city or county is picked
 let config, selection, overlay, drawing = false, firstCorner, drawPreview;
 let activeJob = null, pollTimer, visibleResult = null;
 const map = L.map('map', {zoomControl: true, minZoom: 2, maxZoom: 17, worldCopyJump: false, maxBounds: [[-85,-180],[85,180]]});
@@ -21,13 +17,13 @@ function updateSelection(fit = false) {
   if (selection) map.removeLayer(selection);
   selection = L.rectangle(boundsOf(box), {color:'#6c8750', weight:1.5, fillColor:'#b7cc8c', fillOpacity:0.07, dashArray:'6 5', interactive:false}).addTo(map);
   if (fit) map.fitBounds(boundsOf(box), {padding:[45,45]});
-  $('map-title').textContent = regions[$('region').value]?.name || 'Custom region';
+  $('map-title').textContent = placeName;
   if (visibleResult) $('map-title').textContent += ' · new selection';
+  document.dispatchEvent(new CustomEvent('terra-box'));   // the box changed: series.js reloads its variable list
 }
 function setBounds(box) { ['west','south','east','north'].forEach((id,i)=>$(id).value=box[i]); updateSelection(true); }
-setBounds(regions.romania.bbox);
-$('region').addEventListener('change', () => { if (regions[$('region').value]) setBounds(regions[$('region').value].bbox); });
-['west','south','east','north'].forEach(id=>$(id).addEventListener('change',()=>{$('region').value='custom';updateSelection(true);}));
+setBounds(START.bbox);
+['west','south','east','north'].forEach(id=>$(id).addEventListener('change',()=>{placeName='Custom box';updateSelection(true);}));
 $('fit-button').onclick = ()=>visibleResult ? map.fitBounds(visibleResult.result.bounds,{padding:[25,25]}) : updateSelection(true);
 $('basemap-button').onclick = ()=>{isTerrain=!isTerrain;map.removeLayer(isTerrain?light:terrain);(isTerrain?terrain:light).addTo(map);$('basemap-button').textContent=isTerrain?'Light map':'Terrain';};
 function stopDrawing() {
@@ -46,7 +42,7 @@ map.on('click',event=>{
   if(!firstCorner){firstCorner=event.latlng;$('map-hint').textContent='Now click the opposite corner';return;}
   const a=firstCorner,b=event.latlng;
   const box=[Math.min(a.lng,b.lng),Math.min(a.lat,b.lat),Math.max(a.lng,b.lng),Math.max(a.lat,b.lat)].map(v=>Number(v.toFixed(4)));
-  stopDrawing();$('region').value='custom';setBounds(box);
+  stopDrawing();placeName='Custom box';setBounds(box);
 });
 map.on('mousemove',event=>{
   $('map-coordinates').textContent=`${event.latlng.lat.toFixed(3)}° latitude / ${event.latlng.lng.toFixed(3)}° longitude`;
