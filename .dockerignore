@@ -1,0 +1,9 @@
+*
+!Dockerfile
+!requirements.txt
+!app.py
+!nasa.py
+!processing.py
+!platform_settings.py
+!static/
+!static/**
