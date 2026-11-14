@@ -1,3 +1,4 @@
+import os
 import secrets
 import threading
 import time
@@ -5,6 +6,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Literal
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -20,10 +22,18 @@ from processing import process_bundle
 from platform_settings import Settings, utc_now
 
 ROOT = Path(__file__).resolve().parent
+load_dotenv(ROOT / ".env")  # the NASA login when running without Docker; Compose passes it in otherwise
+PUBLIC = os.environ.get("TERRA_PUBLIC") == "1"  # on a public link the admin pages are switched off
 DATA = ROOT / "data"
 DATA.mkdir(exist_ok=True)
+
+
+def allowed_hosts(extra):
+    return ["localhost", "127.0.0.1", "testserver"] + [host.strip() for host in extra.split(",") if host.strip()]
+
+
 app = FastAPI(title="Earth Data Explorer", docs_url=None, redoc_url=None)
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"])
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts(os.environ.get("ALLOWED_HOSTS", "")))
 settings = Settings(DATA / "platform-settings.json")
 sessions, jobs, admin_sessions = {}, {}, {}
 login_failures = []
@@ -32,6 +42,8 @@ lock = threading.Lock()
 
 @app.middleware("http")
 async def local_guard(request: Request, call_next):
+    if PUBLIC and (request.url.path == "/admin" or request.url.path.startswith("/api/admin")):
+        return JSONResponse({"detail": "Not found."}, status_code=404)
     if request.method in ("POST", "DELETE", "PUT"):
         if request.headers.get("x-earth-request") != "1":
             return JSONResponse({"detail": "Same-origin app request required."}, status_code=403)
@@ -102,6 +114,14 @@ def session(request, required=True):
     return sid, value
 
 
+READY = {"state": "ready", "available": True, "message": "NASA observations are available. Choose your selection to create a heat map."}
+
+
+def provider():
+    """Heat-map availability: the login from the environment when there is one, else the token saved in /admin."""
+    return dict(READY) if sources.has_login() else settings.status()
+
+
 @app.get("/api/config")
 def config(request: Request, response: Response):
     sid, current = session(request, False)
@@ -109,7 +129,7 @@ def config(request: Request, response: Response):
         sid = secrets.token_urlsafe(32)
         sessions[sid] = {"created": time.time()}
         response.set_cookie("earth_session", sid, httponly=True, samesite="strict", secure=request.url.scheme == "https", path="/")
-    return {"variables": VARIABLES, "provider": settings.status()}
+    return {"variables": VARIABLES, "provider": provider(), "series_login": sources.has_login(), "public": PUBLIC}
 
 
 @app.get("/api/health")
@@ -265,7 +285,10 @@ def worker(job_id, query, token):
         update("Heat map ready. Only good-quality satellite observations are displayed.")
     except NasaError as exc:
         if getattr(exc, "authentication", False):
-            settings.mark_invalid(token)
+            if sources.has_login():
+                sources.forget("appeears")  # the next heat map logs in again
+            else:
+                settings.mark_invalid(token)
             job["status"], job["message"] = "error", "The platform's data connection needs an administrator update. Please retry after it has been renewed."
         else:
             job["status"], job["message"] = "error", str(exc)
@@ -276,11 +299,14 @@ def worker(job_id, query, token):
 @app.post("/api/jobs", status_code=202)
 def create_job(query: Query, request: Request):
     sid, _ = session(request)
-    with settings.lock:
-        status = settings.status()
-        if not status["available"]:
-            raise HTTPException(503, status["message"])
-        token = settings.token()
+    if sources.has_login():
+        token = sources.appeears_token()
+    else:
+        with settings.lock:
+            status = settings.status()
+            if not status["available"]:
+                raise HTTPException(503, status["message"])
+            token = settings.token()
     with lock:
         if sum(job["status"] not in ("done", "error") for job in jobs.values()) >= 2:
             raise HTTPException(429, "Two extractions are already running. Wait for one to finish.")
