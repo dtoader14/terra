@@ -22,7 +22,9 @@ DAILY_GIOVANNI_CALLS = 20_000  # the public link must not spend the NASA login w
 GIOVANNI_WORKERS = 24          # about six calls a second, the rate measured as safe
 WAIT_SECONDS = 20              # a request waits this long, then answers 202
 MONTH = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
+REFUSAL_MEMORY = 120            # seconds a refused NASA login is remembered, so it is not sent again for every request
 BOX_HELP = "A box is west,south,east,north in degrees."
+FAILED = "The series could not be fetched. Please try again."
 
 
 class Store:
@@ -56,7 +58,7 @@ class Store:
 
 class _Fetch:
     def __init__(self, variable):
-        self.variable, self.error = variable, None
+        self.variable, self.error, self.refused = variable, None, False  # refused: NASA turned the login down
 
 
 store = Store(Path(__file__).resolve().parent / "data" / "series.sqlite")
@@ -64,6 +66,7 @@ _changed = threading.Condition()   # guards the three structures below; notified
 _inflight = {}                     # (variable id, cell) -> the fetch that is getting it
 _active = set()                    # fetches still running
 _spent = {"day": None, "calls": 0}
+_refused = {"at": None, "message": ""}   # the last time NASA turned the login down
 _pool = ThreadPoolExecutor(GIOVANNI_WORKERS)
 
 
@@ -72,19 +75,27 @@ def reset():
         _inflight.clear()
         _active.clear()
         _spent.update(day=None, calls=0)
+        _refused.update(at=None, message="")
         _changed.notify_all()
+
+
+def _landed(fetch, cells):
+    """Un-mark cells this fetch was getting. A cell that a newer fetch has taken over stays marked."""
+    with _changed:
+        for cell in cells:
+            if _inflight.get((fetch.variable, cell)) is fetch:
+                del _inflight[(fetch.variable, cell)]
+        _changed.notify_all()
+
+
+def _failed(fetch, exc):
+    fetch.error = fetch.error or (str(exc) if isinstance(exc, NasaError) else FAILED)
+    fetch.refused = fetch.refused or bool(getattr(exc, "authentication", False))
 
 
 def _fetch(fetch, variable, cells, saving):
     """Runs in its own thread: get the cells from NASA and save each one as it arrives."""
     vid = variable["id"]
-
-    def landed(batch):
-        with _changed:
-            for cell in batch:
-                _inflight.pop((vid, cell), None)
-            _changed.notify_all()
-
     try:
         if variable["source"] == "NASA POWER":   # one call returns every cell of the variable
             found = sources.power_cells(vid.removeprefix("power:"))
@@ -96,22 +107,24 @@ def _fetch(fetch, variable, cells, saving):
         else:
             calls = {_pool.submit(sources.giovanni_cell, variable, *cell): cell for cell in cells}
             for call in as_completed(calls):
-                try:
-                    _, first, values = call.result()
-                    saving.put(vid, calls[call], first or variable["first_month"], values)   # an empty record counts as saved
-                except NasaError as exc:
-                    fetch.error = fetch.error or str(exc)
-                except Exception:
-                    fetch.error = fetch.error or "The series could not be fetched. Please try again."
-                landed([calls[call]])
-    except NasaError as exc:
-        fetch.error = str(exc)
-    except Exception:
-        fetch.error = "The series could not be fetched. Please try again."
+                if not call.cancelled():
+                    try:
+                        _, first, values = call.result()
+                        saving.put(vid, calls[call], first or variable["first_month"], values)   # an empty record counts as saved
+                    except Exception as exc:
+                        _failed(fetch, exc)
+                        if fetch.refused:   # NASA turned the login down: do not send it again for every other cell
+                            for other in calls:
+                                other.cancel()
+                _landed(fetch, [calls[call]])
+    except Exception as exc:
+        _failed(fetch, exc)
     finally:
-        with _changed:
+        with _changed:   # one step: nobody may see this fetch gone while its cells still look taken
             _active.discard(fetch)
-        landed(cells)
+            if fetch.refused:
+                _refused.update(at=time.monotonic(), message=fetch.error)
+        _landed(fetch, cells)
 
 
 def _start(variable, cells):
@@ -119,13 +132,15 @@ def _start(variable, cells):
     if variable["source"] != "NASA POWER":   # POWER needs no login and is one call, so it is not rationed
         if not sources.has_login():
             raise HTTPException(503, "This series is not saved yet and the server has no NASA login.")
+        if _refused["at"] is not None and time.monotonic() - _refused["at"] < REFUSAL_MEMORY:
+            raise HTTPException(503, _refused["message"])
         if len(cells) > MAX_UNSAVED_CELLS:
             raise HTTPException(422, f"This box needs {len(cells)} grid cells that are not saved yet. Draw a smaller box.")
         if _spent["day"] != date.today():
             _spent.update(day=date.today(), calls=0)
         if _spent["calls"] + len(cells) > DAILY_GIOVANNI_CALLS:
             raise HTTPException(429, "Today's NASA budget is used up. Saved places still work.")
-    if len(_active) >= MAX_FETCHES and not any(fetch.variable == variable["id"] for fetch in _active):
+    if len(_active) >= MAX_FETCHES:
         raise HTTPException(429, "Two fetches are already running. Try again in a minute.")
     if variable["source"] != "NASA POWER":
         _spent["calls"] += len(cells)
@@ -148,7 +163,7 @@ def _box(text):
 
 
 def _digits(value):
-    return None if value is None else float(f"{value:.9g}")
+    return None if value is None or not math.isfinite(value) else float(f"{value:.9g}")
 
 
 def answer(variable, bbox, place, start, end):
@@ -181,19 +196,32 @@ def answer(variable, bbox, place, start, end):
     from_saved = len(saved) == len(cells)
     if not from_saved:
         with _changed:
-            saved = saving.get(vid, cells)   # read again under the lock: a fetch may have just finished
+            # One fetch per variable at a time. While one runs, a request only waits: asking again every few
+            # seconds must not start a second fetch for cells that have just failed.
             watched = {_inflight[(vid, cell)] for cell in cells if (vid, cell) in _inflight}
-            unclaimed = [cell for cell in cells if cell not in saved and (vid, cell) not in _inflight]
-            if unclaimed:
-                watched.add(_start(variable, unclaimed))
-            deadline = time.monotonic() + WAIT_SECONDS
-            while any((vid, cell) in _inflight for cell in cells) and time.monotonic() < deadline:
-                _changed.wait(max(deadline - time.monotonic(), 0))
+            started, checked, deadline = False, False, time.monotonic() + WAIT_SECONDS
+            while True:
+                busy = any(fetch.variable == vid for fetch in _active)
+                mine_landed = not any((vid, cell) in _inflight for cell in cells)
+                if not busy or (mine_landed and (started or watched) and not checked):
+                    saved, checked = saving.get(vid, cells), busy   # read again under the lock; once while busy
+                    unsaved = [cell for cell in cells if cell not in saved]
+                    if not unsaved or (not busy and (started or any(fetch.error for fetch in watched))):
+                        break
+                    if not busy:
+                        watched.add(_start(variable, unsaved))   # raises the refusals
+                        started = True
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    break
+                _changed.wait(remaining)
+            busy = any(fetch.variable == vid for fetch in _active)
         saved = saving.get(vid, cells)
         if len(saved) < len(cells):
-            if not any((vid, cell) in _inflight for cell in cells):   # everything landed, so what is missing failed
-                raise HTTPException(502, next((fetch.error for fetch in watched if fetch.error), "The series could not be fetched. Please try again."))
-            return 202, {"status": "fetching", "cells_total": len(cells), "cells_saved": len(saved)}
+            if busy:
+                return 202, {"status": "fetching", "cells_total": len(cells), "cells_saved": len(saved)}
+            failed = next((fetch for fetch in watched if fetch.error), None)   # the fetch is over, so what is missing failed
+            raise HTTPException(503 if failed and failed.refused else 502, failed.error if failed else FAILED)
 
     months, values, used = series.window(*series.average(saved), start, end)
     trend, reason = series.trend(months, values)

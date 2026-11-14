@@ -1,5 +1,7 @@
 """NASA is never called here: every request goes to a mock transport. The fixture is one real Giovanni answer."""
 import base64
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import httpx
@@ -21,7 +23,8 @@ def clean(monkeypatch):
     monkeypatch.setenv("EARTHDATA_USERNAME", "u")
     monkeypatch.setenv("EARTHDATA_PASSWORD", "p")
     monkeypatch.setattr(sources.time, "sleep", lambda _: None)
-    sources.forget("earthdata"); sources.forget("appeears")
+    monkeypatch.setattr(sources, "_tokens", {})                 # no token or remembered refusal carries over
+    monkeypatch.setattr(sources, "_refusals", {}, raising=False)
 
 
 def serve(monkeypatch, handler):
@@ -128,3 +131,59 @@ def test_power_cells(monkeypatch):
     serve(monkeypatch, lambda request, calls: httpx.Response(422, json={"messages": ["bad"]}))
     with pytest.raises(NasaError, match="POWER"):
         sources.power_cells("T2MDEW")
+
+
+def test_one_login_serves_every_worker(monkeypatch):
+    """The fetch workers start together: NASA must see one login, not one per worker."""
+    def slow(request, calls):
+        threading.Event().wait(0.05)
+        return nasa(request, calls)
+    calls = serve(monkeypatch, slow)
+    with ThreadPoolExecutor(24) as pool:
+        tokens = list(pool.map(lambda _: sources.earthdata_token(), range(24)))
+    assert len(set(tokens)) == 1 and len(calls) == 1
+
+
+def test_a_refused_login_is_remembered_for_two_minutes(monkeypatch):
+    calls = serve(monkeypatch, lambda request, calls: httpx.Response(401, json={"error": "invalid_credentials"}))
+    clock = [1000.0]
+    monkeypatch.setattr(sources, "now", lambda: clock[0])
+    for _ in range(3):
+        with pytest.raises(NasaError) as refused:
+            sources.earthdata_token()
+        assert refused.value.authentication
+    assert len(calls) == 1                                       # NASA heard the wrong password once, not three times
+    for _ in range(2):
+        with pytest.raises(NasaError, match="username or password") as refused:
+            sources.appeears_token()
+        assert refused.value.authentication
+    assert len(calls) == 2                                       # AppEEARS is its own login: asked once, then remembered
+    clock[0] += 121
+    with pytest.raises(NasaError):
+        sources.earthdata_token()
+    assert len(calls) == 3                                       # after two minutes it may ask again
+
+
+def test_giovanni_refusing_the_token_is_remembered(monkeypatch):
+    calls = serve(monkeypatch, lambda r, c: nasa(r, c, lambda n: httpx.Response(401)))
+    with pytest.raises(NasaError):
+        sources.giovanni_cell(AIR, 46.5, 23.5)
+    asked = len(calls)
+    with pytest.raises(NasaError) as again:
+        sources.giovanni_cell(AIR, 45.5, 23.5)
+    assert again.value.authentication and len(calls) == asked     # the second cell is answered from memory
+
+
+def test_a_200_that_is_not_data_is_an_error_not_an_empty_cell(monkeypatch):
+    for body in ("<html><body>Service under maintenance</body></html>", "", '{"message": "try later"}', "lat,x\nlon,y\nTimestamp (UTC),Data\n"):
+        serve(monkeypatch, lambda r, c, body=body: nasa(r, c, lambda n: httpx.Response(200, text=body)))
+        with pytest.raises(NasaError, match="Giovanni"):
+            sources.giovanni_cell(AIR, 46.5, 23.5)
+    header_only = FIXTURE.split("Timestamp (UTC),Data\n")[0] + "Timestamp (UTC),Data\n"       # NASA's own header, no rows
+    serve(monkeypatch, lambda r, c: nasa(r, c, lambda n: httpx.Response(200, text=header_only)))
+    cell, first, values = sources.giovanni_cell(AIR, 44.5, 29.5)
+    assert cell == (44.5, 29.5) and first == AIR["first_month"] and len(values) == 0
+    for answer in (httpx.Response(200, json={"features": []}), httpx.Response(200, text="<html>maintenance</html>")):
+        serve(monkeypatch, lambda request, calls, answer=answer: answer)
+        with pytest.raises(NasaError, match="POWER"):
+            sources.power_cells("T2MDEW")

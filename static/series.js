@@ -1,9 +1,17 @@
 'use strict';
 // Time-series mode: a variable, a town or a box in Romania and a period give a chart and a trend.
-// Uses $, api, setStatus, bbox and map from app.js, which loads first.
+// Uses $, api, bbox and map from app.js, which loads first. It keeps its own status line: app.js rewrites
+// the heat-map one every 30 seconds.
 const SVG = 'http://www.w3.org/2000/svg';
 let seriesVariables = [], seriesPlace = null, placeMarker = null, placeTimer = null, seriesTimer = null, seriesRun = 0;
 
+function seriesStatus(title, message, state = '') {
+  $('series-status-title').textContent = title;
+  $('series-status-message').textContent = message;
+  $('series-status-icon').textContent = state === 'error' ? '!' : state === 'busy' ? '◌' : '↗';
+  $('series-status').classList.toggle('error', state === 'error');
+  $('series-status').classList.toggle('busy', state === 'busy');
+}
 function setMode(mode) {
   document.body.dataset.mode = mode;
   $('mode-heat').classList.toggle('active', mode === 'heat');
@@ -65,7 +73,7 @@ $('place-search').oninput = () => {
         return button;
       }));
       if (!places.length) { const note = document.createElement('p'); note.className = 'field-note'; note.textContent = 'No town found. Try another spelling, or use a box.'; $('place-results').append(note); }
-    } catch (error) { setStatus('Town search failed', error.message, 'error'); }
+    } catch (error) { seriesStatus('Town search failed', error.message, 'error'); }
   }, 250);
 };
 // A box and a town are two different choices: touching the box forgets the town.
@@ -85,11 +93,14 @@ function drawSeries(data) {
   const chart = $('series-chart'), unit = data.variable.unit || '', cells = data.location.cells;
   const where = data.location.type === 'place' ? `${data.location.name}, ${data.location.county}` : 'Selected box';
   chart.replaceChildren();
-  $('series-panel').hidden = false;
-  $('series-title').textContent = `${data.variable.name} · ${where} · ${cells} grid cell${cells === 1 ? '' : 's'} (${data.location.grid})`;
-  const source = `Source: ${data.variable.source} (${data.variable.kind === 'satellite' ? 'satellite measurement' : 'model product'}). ` +
-    (cells === 1 ? 'One grid cell.' : `Mean of ${cells} grid cells, weighted by area.`);
+  $('series-panel').hidden = document.body.dataset.mode !== 'series';
   const shown = data.points.filter(point => point.value !== null);
+  // Say how many cells were really averaged: a box over sea or a border can hold cells with no data.
+  const counts = shown.map(point => point.cells_used), fewest = Math.min(...counts), most = Math.max(...counts);
+  const averaged = !shown.length || (fewest === cells && most === cells) ? `${cells}` : `${fewest === most ? most : fewest + ' to ' + most} of ${cells}`;
+  $('series-title').textContent = `${data.variable.name} · ${where} · ${averaged} grid cell${cells === 1 ? '' : 's'} (${data.location.grid})`;
+  const source = `Source: ${data.variable.source} (${data.variable.kind === 'satellite' ? 'satellite measurement' : 'model product'}). ` +
+    (cells === 1 ? 'One grid cell.' : `Mean of ${averaged} grid cells, weighted by area${averaged === `${cells}` ? '' : '; the others hold no data'}.`);
   if (!shown.length) { $('series-trend').textContent = 'No data for this place and period.'; $('series-note').textContent = source; return; }
 
   const W = 800, H = 260, left = 62, right = 14, top = 14, bottom = 30;
@@ -127,27 +138,27 @@ async function askSeries(run, query) {
     const data = await api('/api/series?' + query);
     if (run !== seriesRun) return;
     if (data.status === 'fetching') {                 // the server is still getting grid cells from NASA: ask again
-      setStatus('Fetching from NASA', `Fetching ${data.cells_saved} of ${data.cells_total} grid cells`, 'busy');
+      seriesStatus('Fetching from NASA', `Fetching ${data.cells_saved} of ${data.cells_total} grid cells`, 'busy');
       seriesTimer = setTimeout(() => askSeries(run, query), 5000);
       return;
     }
     drawSeries(data);
-    setStatus('Your time series is ready', data.from_saved ? 'Answered from saved data.' : 'Fetched from NASA and saved for next time.');
+    seriesStatus('Your time series is ready', data.from_saved ? 'Answered from saved data.' : 'Fetched from NASA and saved for next time.');
   } catch (error) {
-    if (run === seriesRun) setStatus('Check your request', error.message, 'error');
+    if (run === seriesRun) { seriesStatus('Check your request', error.message, 'error'); $('series-panel').hidden = true; }   // no stale chart beside an error
   }
   if (run === seriesRun) $('series-button').disabled = false;
 }
 function showSeries() {
   const variable = $('series-variable').value;
-  if (!variable) { setStatus('Check your request', 'Choose a variable first.', 'error'); return; }
+  if (!variable) { seriesStatus('Check your request', 'Choose a variable first.', 'error'); return; }
   const query = new URLSearchParams({variable});
   if (seriesPlace) query.set('place', seriesPlace.id); else query.set('bbox', bbox().join(','));
   if ($('series-start').value) query.set('start', $('series-start').value);
   if ($('series-end').value) query.set('end', $('series-end').value);
   clearTimeout(seriesTimer);
   $('series-button').disabled = true;
-  setStatus('Looking up your series', 'Checking what is already saved.', 'busy');
+  seriesStatus('Looking up your series', 'Checking what is already saved.', 'busy');
   askSeries(++seriesRun, query);
 }
 $('series-button').onclick = showSeries;
@@ -159,6 +170,6 @@ $('explore-form').addEventListener('submit', event => {
 
 setMode('heat');
 api('/api/series/variables').then(data => { seriesVariables = data.variables; showVariables(); })
-  .catch(error => setStatus('Server connection needed', error.message, 'error'));
+  .catch(error => seriesStatus('Server connection needed', error.message, 'error'));
 // app.js fetches /api/config; wait for it instead of asking twice.
 const publicCheck = setInterval(() => { if (config) { clearInterval(publicCheck); $('admin-link').hidden = Boolean(config.public); } }, 200);

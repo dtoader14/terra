@@ -151,3 +151,58 @@ def test_lists():
         assert len(variables) == 354 and {"id", "name", "kind", "grid", "unit"} <= set(variables[0])
         assert client.get("/api/places", params={"q": "alba iu"}).json()["places"][0]["name"] == "Alba Iulia"
         assert client.get("/api/places").json() == {"places": []}
+
+
+SOIL, ROMANIA_BOX = "gio:GLDAS_NOAH025_M_2_1_SoilMoi0_10cm_inst", "20.2,43.6,29.7,48.3"    # 722 cells
+
+
+def test_a_constant_variable_answers_without_a_trend(nasa, monkeypatch):
+    monkeypatch.setattr(sources, "giovanni_cell", lambda v, lat, lon: ((lat, lon), "2000-01", np.zeros(240)))
+    response = get(variable=AIR, place=ALBA)
+    assert response.status_code == 200 and response.json()["trend"] is None
+    assert response.json()["trend_reason"] == "The yearly means do not change in this period."
+
+
+def test_a_failed_cell_is_retried_once_not_by_every_poll(nasa, monkeypatch):
+    release, calls, failing = threading.Event(), [], (45.5, 22.5)
+    def fetch(v, lat, lon):
+        calls.append((lat, lon))
+        if (lat, lon) == failing and calls.count(failing) == 1:
+            raise NasaError("NASA Giovanni did not answer. Please try again shortly.")
+        if (lat, lon) != failing:
+            release.wait(5)                                              # the other five cells are slow
+        return rising(v, lat, lon)
+    monkeypatch.setattr(sources, "giovanni_cell", fetch)
+    monkeypatch.setattr(fetching, "WAIT_SECONDS", 0.05)
+    for _ in range(4):                                                   # the page asks again every few seconds
+        assert get(variable=AIR, bbox=BOX).status_code == 202
+    assert calls.count(failing) == 1                                     # no retry while that fetch is still running
+    release.set()
+    deadline = time.time() + 5
+    while get(variable=AIR, bbox=BOX).status_code != 200:                # a 502 for the failed fetch, then one retry
+        assert time.time() < deadline
+        time.sleep(0.05)
+    assert calls.count(failing) == 2 and len(calls) == 7
+
+
+def test_a_refused_login_stops_the_fetch_and_is_remembered(nasa, monkeypatch):
+    def refuse(v, lat, lon):
+        nasa.append((lat, lon))
+        threading.Event().wait(0.05)
+        raise NasaError("NASA refused the login for Giovanni.", authentication=True)
+    monkeypatch.setattr(sources, "giovanni_cell", refuse)
+    first = get(variable=SOIL, bbox=ROMANIA_BOX)
+    assert first.status_code == 503 and "login" in first.json()["detail"]
+    assert len(nasa) < 200                                               # the other 700 cells were never sent to NASA
+    asked = len(nasa)
+    again = get(variable=SOIL, bbox=ROMANIA_BOX)
+    assert again.status_code == 503 and len(nasa) == asked               # answered at once from memory
+
+
+def test_a_finished_fetch_leaves_cells_a_newer_fetch_has_taken(nasa):
+    old, new, cell = fetching._Fetch(AIR), fetching._Fetch(AIR), (45.5, 22.5)
+    fetching._inflight[(AIR, cell)] = new
+    fetching._landed(old, [cell])
+    assert fetching._inflight[(AIR, cell)] is new
+    fetching._landed(new, [cell])
+    assert (AIR, cell) not in fetching._inflight

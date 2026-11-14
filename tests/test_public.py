@@ -61,3 +61,36 @@ def test_public_mode_switches_admin_off_and_keeps_heat_maps(monkeypatch):
 def test_allowed_hosts():
     assert server.allowed_hosts("") == ["localhost", "127.0.0.1", "testserver"]
     assert server.allowed_hosts("terra.onrender.com, example.org ,") == ["localhost", "127.0.0.1", "testserver", "terra.onrender.com", "example.org"]
+
+
+def test_public_mode_believes_the_https_proxy(monkeypatch):
+    """A host's HTTPS proxy talks plain http to the server; heat maps must still pass the same-origin check."""
+    started = []
+    with_login(monkeypatch, started)
+    monkeypatch.setattr(server, "PUBLIC", True)
+    behind_proxy = HEADERS | {"Origin": "https://testserver", "X-Forwarded-Proto": "https"}
+    with TestClient(server.app) as client:
+        client.get("/api/config")
+        assert client.post("/api/jobs", json=QUERY, headers=behind_proxy).status_code == 202
+        assert client.post("/api/jobs", json=QUERY, headers=behind_proxy | {"Origin": "https://evil.example"}).status_code == 403
+    with TestClient(server.app) as client:
+        cookie = client.get("/api/config", headers={"X-Forwarded-Proto": "https"}).headers["set-cookie"].lower()
+        assert "secure" in cookie                                            # the visitor cookie is HTTPS-only there
+    monkeypatch.setattr(server, "PUBLIC", False)                             # on a laptop that header is not believed
+    with TestClient(server.app) as client:
+        client.get("/api/config")
+        assert client.post("/api/jobs", json=QUERY, headers=behind_proxy).status_code == 403
+
+
+def test_the_page_names_every_source_and_keeps_its_own_status_line():
+    page = (server.ROOT / "static" / "index.html").read_text()
+    assert "through AppEEARS only" not in page                       # no longer true once time series exist
+    assert "Giovanni" in page and "POWER" in page and "GeoNames" in page
+    assert 'id="series-status-title"' in page and 'id="series-status-message"' in page
+
+
+LEAKED = bool(__import__("os").environ.get("EARTHDATA_PASSWORD"))        # read once, as a bare yes or no, when tests are collected
+
+
+def test_the_real_login_never_reaches_the_test_run():
+    assert LEAKED is False                                               # importing app loads .env; conftest must stop it first

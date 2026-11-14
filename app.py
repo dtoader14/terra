@@ -28,6 +28,12 @@ DATA = ROOT / "data"
 DATA.mkdir(exist_ok=True)
 
 
+def scheme(request):
+    """A host's HTTPS proxy talks plain http to this server; on a public link, believe the scheme it reports."""
+    forwarded = request.headers.get("x-forwarded-proto", "").split(",")[0].strip()
+    return forwarded if PUBLIC and forwarded in ("http", "https") else request.url.scheme
+
+
 def allowed_hosts(extra):
     return ["localhost", "127.0.0.1", "testserver"] + [host.strip() for host in extra.split(",") if host.strip()]
 
@@ -48,7 +54,7 @@ async def local_guard(request: Request, call_next):
         if request.headers.get("x-earth-request") != "1":
             return JSONResponse({"detail": "Same-origin app request required."}, status_code=403)
         origin = request.headers.get("origin")
-        if origin and origin != f"{request.url.scheme}://{request.headers.get('host')}":
+        if origin and origin != f"{scheme(request)}://{request.headers.get('host')}":
             return JSONResponse({"detail": "Cross-origin requests are disabled."}, status_code=403)
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -128,7 +134,7 @@ def config(request: Request, response: Response):
     if current is None:
         sid = secrets.token_urlsafe(32)
         sessions[sid] = {"created": time.time()}
-        response.set_cookie("earth_session", sid, httponly=True, samesite="strict", secure=request.url.scheme == "https", path="/")
+        response.set_cookie("earth_session", sid, httponly=True, samesite="strict", secure=scheme(request) == "https", path="/")
     return {"variables": VARIABLES, "provider": provider(), "series_login": sources.has_login(), "public": PUBLIC}
 
 
@@ -149,7 +155,7 @@ def admin_cookie(request, response):
     admin_sessions.pop(request.cookies.get("earth_admin"), None)
     sid = secrets.token_urlsafe(32)
     admin_sessions[sid] = time.time() + 8 * 3600
-    response.set_cookie("earth_admin", sid, httponly=True, samesite="strict", secure=request.url.scheme == "https", max_age=8 * 3600, path="/")
+    response.set_cookie("earth_admin", sid, httponly=True, samesite="strict", secure=scheme(request) == "https", max_age=8 * 3600, path="/")
 
 
 @app.get("/api/admin/session")

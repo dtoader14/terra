@@ -13,6 +13,7 @@ ROMANIA = (20.2, 43.6, 29.7, 48.3)  # west, south, east, north
 Grid = namedtuple("Grid", "dlat dlon plat plon")  # cell size and phase: a centre is phase + k * size
 EPS = 1e-9
 TOO_SHORT = "Fewer than 10 complete years in this period."
+FLAT = "The yearly means do not change in this period."
 PUBLIC_FIELDS = ("id", "name", "theme", "unit", "unit_hint", "source", "kind", "product", "first_month", "last_month")
 
 
@@ -155,7 +156,11 @@ def trend(months, values):
     if len(points) < 10:
         return None, TOO_SHORT
     years, means = [year for year, _ in points], [mean for _, mean in points]
+    if max(means) == min(means):  # a flat series has no slope to test, and no p-value
+        return None, FLAT
     fit = stats.linregress(years, means)
+    if not (math.isfinite(fit.pvalue) and math.isfinite(fit.stderr)):
+        return None, FLAT
     margin = float(stats.t.ppf(0.975, len(points) - 2) * fit.stderr)
     slope, intercept = float(fit.slope), float(fit.intercept)
     return {

@@ -107,3 +107,8 @@ def test_odd_place_text():
     assert len(series.find_places("a", 3)) == 3
     assert len(series.find_places("a", 0)) == 1 and len(series.find_places("a", 999)) == 25
     assert series.find_places("zzzzqq") == []
+
+
+def test_trend_of_a_series_that_never_changes():
+    months, values = monthly(2000, [5.0] * 12)                             # sea-ice fraction in Romania is 0 every year
+    assert series.trend(months, values) == (None, "The yearly means do not change in this period.")
