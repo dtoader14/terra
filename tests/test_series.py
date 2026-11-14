@@ -96,7 +96,8 @@ def test_places():
         assert series.find_places(q)[0]["name"] == "Alba Iulia"
     alba = series.find_places("Alba Iulia")[0]
     assert alba["county"] == "Alba" and abs(alba["lat"] - 46.07) < 0.1 and abs(alba["lon"] - 23.58) < 0.1
-    assert set(alba) == {"id", "name", "county", "lat", "lon", "population"}
+    assert set(alba) == {"id", "kind", "name", "county", "lat", "lon", "population", "bbox"} and alba["kind"] == "town"
+    assert alba["bbox"] == [round(alba["lon"] - .25, 4), round(alba["lat"] - .25, 4), round(alba["lon"] + .25, 4), round(alba["lat"] + .25, 4)]
     assert series.find_places("pitesti")[0]["name"] in ("Pitești", "Piteşti")          # comma-below or cedilla, as GeoNames spells it
     assert len({p["county"] for p in series.find_places("mihai viteazu", 25)}) > 1   # villages sharing a name
     assert series.place(alba["id"]) == alba and series.place("nope") is None
@@ -112,3 +113,14 @@ def test_odd_place_text():
 def test_trend_of_a_series_that_never_changes():
     months, values = monthly(2000, [5.0] * 12)                             # sea-ice fraction in Romania is 0 every year
     assert series.trend(months, values) == (None, "The yearly means do not change in this period.")
+
+
+def test_counties_are_found_with_a_box_around_their_towns():
+    first = series.find_places("cluj")[0]
+    assert (first["kind"], first["id"], first["name"], first["county"]) == ("county", "county:Cluj", "Cluj", "Cluj")
+    west, south, east, north = first["bbox"]
+    seat = next(place for place in series.find_places("Cluj-Napoca") if place["kind"] == "town")
+    assert west <= seat["lon"] <= east and south <= seat["lat"] <= north and 1 < (east - west) * (north - south) < 2
+    assert series.place("county:Cluj") == first and series.place("county:Nowhere") is None
+    assert series.find_places("brasov")[0]["id"] == "county:Brașov"             # found without its diacritics
+    assert len(series.COUNTIES) == 42 and set(first) == set(seat)

@@ -206,3 +206,56 @@ def test_a_finished_fetch_leaves_cells_a_newer_fetch_has_taken(nasa):
     assert fetching._inflight[(AIR, cell)] is new
     fetching._landed(new, [cell])
     assert (AIR, cell) not in fetching._inflight
+
+
+OLD = "gio:GLDAS_NOAH025_M_2_0_Tair_f_inst"                                 # GLDAS 2.0: 1948-01 to 2014-12
+
+
+def variables(**params):
+    with TestClient(server.app) as client:
+        return client.get("/api/series/variables", params=params)
+
+
+def test_variable_list_follows_the_period(nasa):
+    old = variables(bbox=BOX, start="1950-01", end="1979-12").json()
+    assert old["reason"] is None and len(old["variables"]) == 36
+    assert all(v["id"].startswith("gio:GLDAS_NOAH025_M_2_0_") for v in old["variables"])
+    assert {(v["available_from"], v["available_to"], v["full_years"]) for v in old["variables"]} == {("1950-01", "1979-12", 30)}
+    recent = {v["id"]: v for v in variables(bbox=BOX, start="2021-01", end="2025-12").json()["variables"]}
+    assert len(recent) == 317 and OLD not in recent and "gio:TRMM_3B43_7_precipitation" not in recent
+    assert recent[AIR]["full_years"] == 5
+    part = {v["id"]: v for v in variables(bbox=BOX, start="1990-01", end="2010-12").json()["variables"]}[AIR]
+    assert (part["available_from"], part["available_to"], part["full_years"]) == ("2002-09", "2010-12", 8)
+    everything = variables().json()
+    assert len(everything["variables"]) == 354 and everything["variables"][0]["cells"] is None
+
+
+def test_variable_list_follows_the_place(nasa):
+    assert variables(bbox="-122.5,35,-119,39").json() == {"variables": [], "reason": "This box is outside Romania. Time series cover Romania only."}
+    whole = {v["id"]: v for v in variables(bbox=ROMANIA_BOX).json()["variables"]}
+    assert whole[RAIN]["cells"] == 4465 and whole[RAIN]["too_large"] is True     # 0.1 degree grid: over the 800-cell limit
+    assert whole[AIR]["cells"] == 40 and whole[AIR]["too_large"] is False
+    assert whole[DEW]["cells"] == 135 and whole[DEW]["too_large"] is False       # POWER is one call for any box
+    town = {v["id"]: v for v in variables(place=ALBA).json()["variables"]}
+    assert town[RAIN]["cells"] == 1 and town[RAIN]["too_large"] is False
+    county = {v["id"]: v for v in variables(place="county:Cluj").json()["variables"]}
+    assert county[AIR]["cells"] >= 1 and county[SOIL]["cells"] > 10
+    assert variables(place="nope").status_code == 404 and variables(bbox="1,2,3").status_code == 400
+    assert variables(bbox=BOX, place=ALBA).status_code == 400 and variables(start="2005-01", end="2004-12").status_code == 400
+
+
+def test_a_big_box_stops_being_too_large_once_its_cells_are_saved(nasa, monkeypatch):
+    monkeypatch.setattr(fetching, "MAX_UNSAVED_CELLS", 5)                       # BOX holds six 1 degree cells
+    assert {v["id"]: v for v in variables(bbox=BOX).json()["variables"]}[AIR]["too_large"] is True
+    monkeypatch.setattr(fetching, "MAX_UNSAVED_CELLS", 800)
+    assert get(variable=AIR, bbox=BOX).status_code == 200
+    monkeypatch.setattr(fetching, "MAX_UNSAVED_CELLS", 5)
+    assert {v["id"]: v for v in variables(bbox=BOX).json()["variables"]}[AIR]["too_large"] is False
+
+
+def test_a_county_is_a_place(nasa):
+    body = get(variable=AIR, place="county:Cluj").json()
+    assert body["location"]["type"] == "county" and body["location"]["name"] == "Cluj" and body["location"]["cells"] >= 1
+    assert body["location"]["bbox"] == series.place("county:Cluj")["bbox"]
+    with TestClient(server.app) as client:
+        assert client.get("/api/places", params={"q": "cluj"}).json()["places"][0]["kind"] == "county"

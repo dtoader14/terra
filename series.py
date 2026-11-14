@@ -41,21 +41,33 @@ def _plain(text):
 
 
 def _places():
-    places, names = {}, []
+    """Towns from places.tsv, and one county per county name: the box around all of its towns."""
+    places, names, extents = {}, [], {}
     with open(HERE / "places.tsv", encoding="utf-8") as stream:
         next(stream)
         for line in stream:  # already ordered by population, largest first
             pid, name, ascii_name, alt, county, lat, lon, population = line.rstrip("\n").split("\t")
-            places[pid] = {"id": pid, "name": name, "county": county, "lat": float(lat), "lon": float(lon), "population": int(population)}
+            lat, lon = float(lat), float(lon)
+            # A town's box is half a degree around it, enough for a heat map; a time series uses its one grid cell.
+            places[pid] = {"id": pid, "kind": "town", "name": name, "county": county, "lat": lat, "lon": lon, "population": int(population),
+                           "bbox": [round(lon - .25, 4), round(lat - .25, 4), round(lon + .25, 4), round(lat + .25, 4)]}
             names.append((pid, {_plain(n) for n in (name, ascii_name, *alt.split(","))} - {""}))
-    return places, names
+            west, south, east, north = extents.get(county, (lon, lat, lon, lat))
+            extents[county] = (min(west, lon), min(south, lat), max(east, lon), max(north, lat))
+    counties = {}
+    for county, (west, south, east, north) in sorted(extents.items()):
+        counties[county] = places["county:" + county] = {
+            "id": "county:" + county, "kind": "county", "name": county, "county": county, "lat": round((south + north) / 2, 4),
+            "lon": round((west + east) / 2, 4), "population": None, "bbox": [west, south, east, north]}
+    # Counties are searched first, so "cluj" offers the county before Cluj-Napoca.
+    return places, [(place["id"], {_plain(name)}) for name, place in counties.items()] + names, counties
 
 
-PLACES, _NAMES = _places()
+PLACES, _NAMES, COUNTIES = _places()
 
 
 def find_places(q, limit=10):
-    """Towns whose name starts with q, then towns whose name contains it; larger towns first."""
+    """Counties and towns whose name starts with q, then those whose name contains it; larger towns first."""
     q, limit = _plain(q), min(max(limit, 1), 25)
     if not q or len(q) > 80:
         return []

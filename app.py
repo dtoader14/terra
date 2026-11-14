@@ -354,8 +354,8 @@ def get_file(job_id: str, name: str, request: Request, download: bool = False):
 
 
 @app.get("/api/series/variables")
-def series_variables():
-    return {"variables": [series.public_variable(v) for v in series.VARIABLES.values()]}
+def series_variables(bbox: str | None = None, place: str | None = None, start: str | None = None, end: str | None = None):
+    return fetching.available(bbox, place, start, end)
 
 
 @app.get("/api/places")

@@ -52,6 +52,13 @@ class Store:
                          (variable, min(lats), max(lats), min(lons), max(lons)))
         return {wanted[(lat, lon)]: (first, np.frombuffer(vals, dtype="float64")) for lat, lon, first, vals in rows if (lat, lon) in wanted}
 
+    def count(self, variable, cells):
+        """How many of these cells are saved. The cells are a full rectangle of the grid, so a range count is exact."""
+        keys = [self._key(cell) for cell in cells]
+        lats, lons = [key[0] for key in keys], [key[1] for key in keys]
+        return self._run("SELECT COUNT(*) FROM cell WHERE variable = ? AND lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?",
+                         (variable, min(lats), max(lats), min(lons), max(lons)))[0][0]
+
     def put(self, variable, cell, first, values):
         self._run("INSERT OR REPLACE INTO cell VALUES (?, ?, ?, ?, ?)", (variable, *self._key(cell), first, np.asarray(values, dtype="float64").tobytes()))
 
@@ -166,6 +173,69 @@ def _digits(value):
     return None if value is None or not math.isfinite(value) else float(f"{value:.9g}")
 
 
+def _period(start, end):
+    if any(month is not None and not MONTH.match(month) for month in (start, end)):
+        raise HTTPException(400, "Months are written YYYY-MM.")
+    if start and end and start > end:
+        raise HTTPException(400, "The start month is after the end month.")
+
+
+def _where(bbox, place):
+    """What was asked for: (the answer's location, the box to average or None, the town or None)."""
+    if place is not None:
+        found = series.place(place)
+        if found is None:
+            raise HTTPException(404, "Unknown place.")
+        if found["kind"] == "town":   # a town is the one grid cell that contains it
+            return {"type": "place", "bbox": None, "name": found["name"], "county": found["county"]}, None, found
+        box, location = tuple(found["bbox"]), {"type": "county", "name": found["name"], "county": found["county"]}
+    else:
+        box, location = _box(bbox), {"type": "bbox", "name": None, "county": None}
+    box = series.clip(box)
+    if box is None:
+        raise HTTPException(422, "This box is outside Romania. Time series cover Romania only.")
+    return {**location, "bbox": list(box)}, box, None
+
+
+def _cells(grid, box, town):
+    return [series.cell_of(grid, town["lat"], town["lon"])] if town else series.cells_in(grid, box)
+
+
+def _full_years(first, last):
+    """Calendar years that lie wholly between two months, both included."""
+    return max(0, (int(last[:4]) - (last[5:] != "12")) - (int(first[:4]) + (first[5:] != "01")) + 1)
+
+
+def available(bbox, place, start, end):
+    """The variables that have something to show for this place and period, with what each can offer."""
+    if bbox is not None and place is not None:
+        raise HTTPException(400, "Give either a box or a place.")
+    _period(start, end)
+    box = town = None
+    if bbox is not None or place is not None:
+        try:
+            _, box, town = _where(bbox, place)
+        except HTTPException as outside:
+            if outside.status_code != 422:
+                raise
+            return {"variables": [], "reason": outside.detail}
+    listed, cells_on = [], {}
+    for variable in series.VARIABLES.values():
+        first, last = max(start or "", variable["first_month"]), min(end or "9999-12", variable["last_month"])
+        if first > last:   # the record and the period do not overlap
+            continue
+        entry = {**series.public_variable(variable), "available_from": first, "available_to": last,
+                 "full_years": _full_years(first, last), "cells": None, "too_large": False}
+        if box or town:
+            grid = variable["grid"]
+            cells = cells_on[grid] = cells_on.get(grid) or _cells(grid, box, town)
+            entry["cells"] = len(cells)
+            if variable["source"] != "NASA POWER" and len(cells) > MAX_UNSAVED_CELLS:   # the same limit a fetch would hit
+                entry["too_large"] = len(cells) - store.count(variable["id"], cells) > MAX_UNSAVED_CELLS
+        listed.append(entry)
+    return {"variables": listed, "reason": None}
+
+
 def answer(variable, bbox, place, start, end):
     """(HTTP status, body) for one series request; raises HTTPException with a plain sentence."""
     if variable not in series.VARIABLES:
@@ -174,23 +244,11 @@ def answer(variable, bbox, place, start, end):
     vid, grid, saving = variable["id"], variable["grid"], store
     if (bbox is None) == (place is None):
         raise HTTPException(400, "Give either a box or a place.")
-    box = _box(bbox) if bbox is not None else None
-    if any(month is not None and not MONTH.match(month) for month in (start, end)):
-        raise HTTPException(400, "Months are written YYYY-MM.")
-    if start and end and start > end:
-        raise HTTPException(400, "The start month is after the end month.")
-    if place is not None:
-        town = series.place(place)
-        if town is None:
-            raise HTTPException(404, "Unknown place.")
-        cells = [series.cell_of(grid, town["lat"], town["lon"])]
-        location = {"type": "place", "bbox": None, "name": town["name"], "county": town["county"]}
-    else:
-        box = series.clip(box)
-        if box is None:
-            raise HTTPException(422, "This box is outside Romania. Time series cover Romania only.")
-        cells = series.cells_in(grid, box)
-        location = {"type": "bbox", "bbox": list(box), "name": None, "county": None}
+    if bbox is not None:
+        _box(bbox)   # a malformed box is reported before anything else about the request
+    _period(start, end)
+    location, box, town = _where(bbox, place)
+    cells = _cells(grid, box, town)
 
     saved = saving.get(vid, cells)
     from_saved = len(saved) == len(cells)
