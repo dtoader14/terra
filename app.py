@@ -166,7 +166,7 @@ def worker(job_id, query, token):
         directory.mkdir(exist_ok=True)
         job["result"] = process_bundle(client, job, directory, update)
         job["status"] = "done"
-        update("Heat map ready. Only good-quality satellite observations are displayed.")
+        update(VARIABLES[query.variable]["summary"])
     except NasaError as exc:
         if getattr(exc, "authentication", False):
             sources.forget("appeears")

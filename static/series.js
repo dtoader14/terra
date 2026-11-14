@@ -153,7 +153,8 @@ function drawSeries(data) {
     data.location.type === 'county' ? `${data.location.name} county (the box around it)` : 'Selected box';
   chart.replaceChildren();
   $('series-panel').hidden = document.body.dataset.mode !== 'series';
-  const shown = data.points.filter(point => point.value !== null);
+  const shown = data.points.filter(point => point.value !== null), guess = data.prediction, ahead = guess ? guess.projection : [];
+  $('series-prediction').textContent = '';
   const counts = shown.map(point => point.cells_used), fewest = Math.min(...counts), most = Math.max(...counts);
   const averaged = !shown.length || (fewest === cells && most === cells) ? `${cells}` : `${fewest === most ? most : fewest + ' to ' + most} of ${cells}`;
   $('series-title').textContent = `${data.variable.name} · ${where} · ${averaged} grid cell${cells === 1 ? '' : 's'} (${data.location.grid})`;
@@ -163,8 +164,8 @@ function drawSeries(data) {
 
   const W = 800, H = 260, left = 62, right = 14, top = 14, bottom = 30;
   const when = month => Number(month.slice(0, 4)) + (Number(month.slice(5, 7)) - 0.5) / 12;
-  const t0 = when(data.points[0].month), t1 = when(data.points.at(-1).month);
-  let low = Math.min(...shown.map(p => p.value)), high = Math.max(...shown.map(p => p.value));
+  const t0 = when(data.points[0].month), t1 = ahead.length ? ahead.at(-1)[0] + 1 : when(data.points.at(-1).month);
+  let low = Math.min(...shown.map(p => p.value), ...ahead.map(([, value, error]) => value - error)), high = Math.max(...shown.map(p => p.value), ...ahead.map(([, value, error]) => value + error));
   if (low === high) { low -= 0.5; high += 0.5; }
   const X = t => left + (W - left - right) * (t1 === t0 ? 0.5 : (t - t0) / (t1 - t0));
   const Y = value => top + (H - top - bottom) * (1 - (value - low) / (high - low));
@@ -175,7 +176,7 @@ function drawSeries(data) {
     part('text', {...label, x: left - 8, y: top + 4, 'text-anchor': 'end'}, digits(high)),
     part('text', {...label, x: left - 8, y: H - bottom, 'text-anchor': 'end'}, digits(low)),
     part('text', {...label, x: left, y: H - 9}, data.points[0].month.slice(0, 4)),
-    part('text', {...label, x: W - right, y: H - 9, 'text-anchor': 'end'}, data.points.at(-1).month.slice(0, 4)));
+    part('text', {...label, x: W - right, y: H - 9, 'text-anchor': 'end'}, ahead.length ? ahead.at(-1)[0] : data.points.at(-1).month.slice(0, 4)));
   let path = '', drawing = false;
   for (const point of data.points) {
     if (point.value === null) { drawing = false; continue; }
@@ -184,6 +185,16 @@ function drawSeries(data) {
   }
   chart.append(part('path', {d: path, fill: 'none', stroke: '#9bb7a0', 'stroke-width': 1}));
   for (const year of data.yearly) chart.append(part('circle', {cx: X(year.year + 0.5).toFixed(1), cy: Y(year.value).toFixed(1), r: 2.6, fill: '#244f46'}));
+  if (ahead.length) {
+    const at = ([year, value, error], side) => `${X(year + 0.5).toFixed(1)},${Y(value + side * error).toFixed(1)}`;
+    chart.append(
+      part('polygon', {points: [...ahead.map(point => at(point, 1)), ...ahead.slice().reverse().map(point => at(point, -1))].join(' '), fill: '#b9384c', 'fill-opacity': 0.12}),
+      part('polyline', {points: ahead.map(point => at(point, 0)).join(' '), fill: 'none', stroke: '#b9384c', 'stroke-width': 2, 'stroke-dasharray': '5 4'}));
+  }
+  if (guess) $('series-prediction').textContent =
+    (ahead.length ? `Prediction score: ${Math.round(guess.skill * 100)}% better than assuming no change. Dashed: ${guess.model}, continued to ${ahead.at(-1)[0]} inside its past error.`
+      : 'Prediction score: none. Nothing predicted unseen years better than assuming no change, so no projection is drawn.') +
+    ` Tested ${guess.tests} times on past years at ${guess.places} Romanian places. Error of each model${unit ? ' in ' + unit : ''}: ${Object.entries(guess.errors).map(([name, error]) => `${name} ${digits(error)}`).join(', ')}.`;
   if (!data.trend) { $('series-trend').textContent = data.trend_reason; $('series-note').textContent = source; return; }
   const trend = data.trend, [[yearA, valueA], [yearB, valueB]] = trend.line;
   chart.append(part('line', {x1: X(yearA + 0.5).toFixed(1), y1: Y(valueA).toFixed(1), x2: X(yearB + 0.5).toFixed(1), y2: Y(valueB).toFixed(1), stroke: '#b9384c', 'stroke-width': 2}));

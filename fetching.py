@@ -260,6 +260,7 @@ def answer(variable, bbox, place, start, end):
 
     months, values, used = series.window(*series.average(saved), start, end)
     trend, reason = series.trend(months, values)
+    points = series.yearly(months, values)
     if trend:
         trend = {**trend, **{key: _digits(trend[key]) for key in ("slope_per_decade", "p_value", "mann_kendall_p")},
                  "ci95": [_digits(v) for v in trend["ci95"]], "line": [[year, _digits(v)] for year, v in trend["line"]]}
@@ -268,6 +269,6 @@ def answer(variable, bbox, place, start, end):
         "location": {**location, "grid": series.grid_label(grid), "cells": len(cells)},
         "period": {"start": months[0] if months else start, "end": months[-1] if months else end},
         "points": [{"month": month, "value": _digits(value), "cells_used": count} for month, value, count in zip(months, values, used)],
-        "yearly": [{"year": year, "value": _digits(value)} for year, value in series.yearly(months, values)],
-        "trend": trend, "trend_reason": reason, "from_saved": from_saved,
+        "yearly": [{"year": year, "value": _digits(value)} for year, value in points],
+        "trend": trend, "trend_reason": reason, "prediction": series.predict(vid, points), "from_saved": from_saved,
     }

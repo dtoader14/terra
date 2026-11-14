@@ -6,3 +6,5 @@ rasterio>=1.4,<2
 Pillow>=11,<14
 python-dotenv>=1,<2
 scipy>=1.13,<2
+xgboost-cpu>=3,<4; sys_platform == "linux"
+xgboost>=3,<4; sys_platform != "linux"
