@@ -14,7 +14,7 @@ RUN apt-get update \
     && mkdir -p /app/data \
     && chown earth:earth /app/data
 
-COPY app.py nasa.py processing.py series.py sources.py fetching.py variables.csv places.tsv prediction.csv ./
+COPY app.py nasa.py processing.py series.py sources.py fetching.py chat.py variables.csv places.tsv trends.csv ./
 COPY static/ ./static/
 
 USER earth

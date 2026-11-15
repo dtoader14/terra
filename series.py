@@ -33,43 +33,6 @@ def public_variable(variable):
     return {**{key: variable[key] for key in PUBLIC_FIELDS}, "grid": grid_label(variable["grid"])}
 
 
-MODELS = {"none": "no change", "recent": "the average of the last 10 years", "line": "a straight line through all years",
-          "line30": "a straight line through the last 30 years", "xgb": "XGBoost"}
-
-
-def _prediction():
-    with open(HERE / "prediction.csv", encoding="utf-8", newline="") as stream:
-        return {row["id"]: row for row in csv.DictReader(stream)}
-
-
-PREDICTION = _prediction()
-
-
-def predict(vid, points):
-    row = PREDICTION.get(vid)
-    if row is None or len(points) < 10:
-        return None
-    result = {"model": MODELS[row["model"]], "skill": float(row["skill"]), "tests": int(row["tests"]), "places": int(row["places"]),
-              "errors": {name: float(row[f"rmse_{model}"]) for model, name in MODELS.items()}, "projection": []}
-    if row["model"] != "none":
-        errors = [float(row[f"e{lead}"]) for lead in range(1, 11) if row[f"e{lead}"]]
-        years, means = np.array([year for year, _ in points], dtype=float), np.array([mean for _, mean in points])
-        ahead = years[-1] + np.arange(1, len(errors) + 1)
-        if row["model"] == "recent":
-            values = np.full(len(ahead), means[-10:].mean())
-        elif row["model"] == "xgb":
-            import xgboost
-            mean, spread = means.mean(), means.std() or 1.0
-            fitted = xgboost.train({"max_depth": 2, "eta": 0.3, "nthread": 1}, xgboost.DMatrix(years.reshape(-1, 1), label=(means - mean) / spread), num_boost_round=50)
-            values = fitted.predict(xgboost.DMatrix(ahead.reshape(-1, 1))) * spread + mean
-        else:
-            window = slice(-30, None) if row["model"] == "line30" else slice(None)
-            slope, intercept = np.polyfit(years[window], means[window], 1)
-            values = slope * ahead + intercept
-        result["projection"] = [[int(year), float(value), error] for year, value, error in zip(ahead, values, errors)]
-    return result
-
-
 def _plain(text):
     text = unicodedata.normalize("NFKD", text.lower())
     return " ".join("".join(c for c in text if not unicodedata.combining(c)).replace("-", " ").split())
@@ -98,6 +61,17 @@ def _places():
 
 
 PLACES, _NAMES = _places()
+
+
+def _trends():
+    table = {}
+    with open(HERE / "trends.csv", encoding="utf-8", newline="") as stream:
+        for row in csv.DictReader(stream):
+            table.setdefault(row["id"], []).append({**PLACES[row["place"]], "slope_per_decade": float(row["slope"]), "p_value": float(row["p"]), "years": int(row["years"])})
+    return table
+
+
+TRENDS = _trends()
 
 
 def find_places(q, limit=10):

@@ -10,9 +10,10 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+import chat
 import fetching
 import series
 import sources
@@ -233,6 +234,20 @@ def variables(start: date | None = None, end: date | None = None):
 @app.get("/api/series/variables")
 def series_variables(bbox: str | None = None, place: str | None = None, start: str | None = None, end: str | None = None):
     return fetching.available(bbox, place, start, end)
+
+
+class Question(BaseModel):
+    question: str = Field(min_length=1, max_length=300)
+
+
+@app.post("/api/chat")
+def ask(body: Question):
+    return chat.ask(body.question)
+
+
+@app.get("/api/trends")
+def trends(variable: str):
+    return {"places": series.TRENDS.get(variable, [])}
 
 
 @app.get("/api/places")

@@ -4,6 +4,7 @@ let seriesVariables = [], seriesReason = null, seriesPlace = null, placeMarker =
 let variablesTimer = null, variablesRun = 0;
 let seriesChoice = null;
 let placeListed = [];
+const trendLayer = L.layerGroup();
 
 function seriesStatus(title, message, state = '') {
   $('series-status-title').textContent = title;
@@ -17,6 +18,7 @@ function setMode(mode) {
   $('mode-heat').classList.toggle('active', mode === 'heat');
   $('mode-series').classList.toggle('active', mode === 'series');
   $('series-panel').hidden = mode !== 'series' || !$('series-chart').childElementCount;
+  if (mode === 'series') trendLayer.addTo(map); else trendLayer.remove();
   refreshSteps();
 }
 $('mode-heat').onclick = () => setMode('heat');
@@ -102,7 +104,7 @@ function forgetPlace() {
   if (placeMarker) { map.removeLayer(placeMarker); placeMarker = null; }
 }
 function placeLabel(place) { return place.kind === 'county' ? `${place.name} county` : `${place.name}, ${place.county}`; }
-function choosePlace(place) {
+function choosePlace(place, fit = true) {
   if (drawing) stopDrawing();
   forgetPlace();
   seriesPlace = place;
@@ -110,7 +112,7 @@ function choosePlace(place) {
   $('place-results').replaceChildren(); placeListed = [];
   if (place.kind === 'town') placeMarker = L.circleMarker([place.lat, place.lon], {radius: 7, color: '#244f46', weight: 2, fillColor: '#d5eaaa', fillOpacity: 0.9}).addTo(map);
   placeName = placeLabel(place);
-  setBounds(place.bbox);
+  if (fit) setBounds(place.bbox); else { ['west', 'south', 'east', 'north'].forEach((id, i) => $(id).value = place.bbox[i]); updateSelection(); }
 }
 $('place-search').oninput = () => {
   clearTimeout(placeTimer);
@@ -153,8 +155,7 @@ function drawSeries(data) {
     data.location.type === 'county' ? `${data.location.name} county (the box around it)` : 'Selected box';
   chart.replaceChildren();
   $('series-panel').hidden = document.body.dataset.mode !== 'series';
-  const shown = data.points.filter(point => point.value !== null), guess = data.prediction, ahead = guess ? guess.projection : [];
-  $('series-prediction').textContent = '';
+  const shown = data.points.filter(point => point.value !== null);
   const counts = shown.map(point => point.cells_used), fewest = Math.min(...counts), most = Math.max(...counts);
   const averaged = !shown.length || (fewest === cells && most === cells) ? `${cells}` : `${fewest === most ? most : fewest + ' to ' + most} of ${cells}`;
   $('series-title').textContent = `${data.variable.name} · ${where} · ${averaged} grid cell${cells === 1 ? '' : 's'} (${data.location.grid})`;
@@ -164,8 +165,8 @@ function drawSeries(data) {
 
   const W = 800, H = 260, left = 62, right = 14, top = 14, bottom = 30;
   const when = month => Number(month.slice(0, 4)) + (Number(month.slice(5, 7)) - 0.5) / 12;
-  const t0 = when(data.points[0].month), t1 = ahead.length ? ahead.at(-1)[0] + 1 : when(data.points.at(-1).month);
-  let low = Math.min(...shown.map(p => p.value), ...ahead.map(([, value, error]) => value - error)), high = Math.max(...shown.map(p => p.value), ...ahead.map(([, value, error]) => value + error));
+  const t0 = when(data.points[0].month), t1 = when(data.points.at(-1).month);
+  let low = Math.min(...shown.map(p => p.value)), high = Math.max(...shown.map(p => p.value));
   if (low === high) { low -= 0.5; high += 0.5; }
   const X = t => left + (W - left - right) * (t1 === t0 ? 0.5 : (t - t0) / (t1 - t0));
   const Y = value => top + (H - top - bottom) * (1 - (value - low) / (high - low));
@@ -176,7 +177,7 @@ function drawSeries(data) {
     part('text', {...label, x: left - 8, y: top + 4, 'text-anchor': 'end'}, digits(high)),
     part('text', {...label, x: left - 8, y: H - bottom, 'text-anchor': 'end'}, digits(low)),
     part('text', {...label, x: left, y: H - 9}, data.points[0].month.slice(0, 4)),
-    part('text', {...label, x: W - right, y: H - 9, 'text-anchor': 'end'}, ahead.length ? ahead.at(-1)[0] : data.points.at(-1).month.slice(0, 4)));
+    part('text', {...label, x: W - right, y: H - 9, 'text-anchor': 'end'}, data.points.at(-1).month.slice(0, 4)));
   let path = '', drawing = false;
   for (const point of data.points) {
     if (point.value === null) { drawing = false; continue; }
@@ -185,21 +186,40 @@ function drawSeries(data) {
   }
   chart.append(part('path', {d: path, fill: 'none', stroke: '#9bb7a0', 'stroke-width': 1}));
   for (const year of data.yearly) chart.append(part('circle', {cx: X(year.year + 0.5).toFixed(1), cy: Y(year.value).toFixed(1), r: 2.6, fill: '#244f46'}));
-  if (ahead.length) {
-    const at = ([year, value, error], side) => `${X(year + 0.5).toFixed(1)},${Y(value + side * error).toFixed(1)}`;
-    chart.append(
-      part('polygon', {points: [...ahead.map(point => at(point, 1)), ...ahead.slice().reverse().map(point => at(point, -1))].join(' '), fill: '#b9384c', 'fill-opacity': 0.12}),
-      part('polyline', {points: ahead.map(point => at(point, 0)).join(' '), fill: 'none', stroke: '#b9384c', 'stroke-width': 2, 'stroke-dasharray': '5 4'}));
-  }
-  if (guess) $('series-prediction').textContent =
-    (ahead.length ? `Prediction score: ${Math.round(guess.skill * 100)}% better than assuming no change. Dashed: ${guess.model}, continued to ${ahead.at(-1)[0]} inside its past error.`
-      : 'Prediction score: none. Nothing predicted unseen years better than assuming no change, so no projection is drawn.') +
-    ` Tested ${guess.tests} times on past years at ${guess.places} Romanian places. Error of each model${unit ? ' in ' + unit : ''}: ${Object.entries(guess.errors).map(([name, error]) => `${name} ${digits(error)}`).join(', ')}.`;
   if (!data.trend) { $('series-trend').textContent = data.trend_reason; $('series-note').textContent = source; return; }
   const trend = data.trend, [[yearA, valueA], [yearB, valueB]] = trend.line;
   chart.append(part('line', {x1: X(yearA + 0.5).toFixed(1), y1: Y(valueA).toFixed(1), x2: X(yearB + 0.5).toFixed(1), y2: Y(valueB).toFixed(1), stroke: '#b9384c', 'stroke-width': 2}));
   $('series-trend').textContent = `${trend.slope_per_decade < 0 ? '−' : '+'}${digits(Math.abs(trend.slope_per_decade))} ${unit} per decade · ${pText(trend.p_value)} · ${trend.significant ? 'significant' : 'not significant'}`;
   $('series-note').textContent = `${source} Trend fitted on ${trend.years} yearly means (dots), 95% range ${digits(trend.ci95[0])} to ${digits(trend.ci95[1])} ${unit} per decade; Mann-Kendall ${pText(trend.mann_kendall_p)}.`;
+}
+
+async function showTrends(variable, unit) {
+  const {places} = await api('/api/trends?variable=' + encodeURIComponent(variable));
+  const sure = places.filter(place => place.p_value < 0.05), most = sure.length ? Math.abs(sure[0].slope_per_decade) : 1, least = sure.length ? Math.abs(sure.at(-1).slope_per_decade) : 0;
+  const size = value => `${digits(Math.abs(value))}${unit ? ' ' + unit : ''}`;
+  const why = place => place.p_value >= 0.05 ? `no clear change in ${place.years} years` :
+    `${place.slope_per_decade < 0 ? 'fell' : 'rose'} by ${size(place.slope_per_decade * (place.years - 1) / 10)} in ${place.years} years (${size(place.slope_per_decade)} per decade) · ${place.p_value < 0.001 ? 'very strong' : place.p_value < 0.01 ? 'strong' : 'moderate'} evidence`;
+  const open = place => {
+    choosePlace(place, false);
+    if (!$('series-start').value || !$('series-end').value) $('series-whole').click();
+    seriesChoice = variable;
+    showSeries(variable);
+  };
+  const tint = place => `rgb(${(place.slope_per_decade > 0 ? [185, 56, 76] : [57, 124, 184]).map(c => Math.round(255 + (c - 255) * (0.25 + 0.75 * (Math.abs(place.slope_per_decade) - least) / (most - least || 1)))).join(',')})`;
+  trendLayer.clearLayers();
+  for (const place of places) {
+    const style = place.p_value < 0.05 ? {radius: 8, color: '#244f46', weight: 1, fillColor: tint(place), fillOpacity: 0.95} : {radius: 5, color: '#9aa39c', weight: 1, fillColor: '#e3e6df', fillOpacity: 0.9};
+    L.circleMarker([place.lat, place.lon], style).bindTooltip(`${place.name}: ${why(place)}`).on('click', () => open(place)).addTo(trendLayer);
+  }
+  const title = document.createElement('p');
+  title.className = 'field-note';
+  title.textContent = places.length ? `Where it is changing, over each place's whole record: ${sure.length} of ${places.length} county seats show a clear change. On the map red is rising, blue is falling, darker is faster, and small grey dots show no clear change. The evidence label says how unlikely the change is to be chance. Fastest first:` : '';
+  $('series-ranking').replaceChildren(title, ...sure.slice(0, 10).map((place, rank) => {
+    const button = document.createElement('button');
+    button.type = 'button'; button.textContent = `${rank + 1}. ${place.name}, ${place.county} · ${why(place)}`; button.onclick = () => open(place);
+    return button;
+  }));
+  if (places.length) map.fitBounds([[43.6, 20.2], [48.3, 29.7]]);
 }
 
 async function askSeries(run, query) {
@@ -212,23 +232,45 @@ async function askSeries(run, query) {
       return;
     }
     drawSeries(data);
+    showTrends(data.variable.id, data.variable.unit || '');
     seriesStatus('Your time series is ready', data.from_saved ? 'Answered from saved data.' : 'Fetched from NASA and saved for next time.');
   } catch (error) {
     if (run === seriesRun) { seriesStatus('Check your request', error.message, 'error'); $('series-panel').hidden = true; }
   }
   if (run === seriesRun) $('series-button').disabled = false;
 }
-function showSeries() {
-  const variable = $('series-variable').value;
+function showSeries(variable = $('series-variable').value) {
   if (!variable) { seriesStatus('Check your request', $('series-variable-note').textContent || 'Choose a variable first.', 'error'); return; }
   const query = placeQuery();
   query.set('variable', variable);
   clearTimeout(seriesTimer);
+  trendLayer.clearLayers(); $('series-ranking').replaceChildren();
   $('series-button').disabled = true;
   seriesStatus('Looking up your series', 'Checking what is already saved.', 'busy');
   askSeries(++seriesRun, query);
 }
-$('series-button').onclick = showSeries;
+$('series-button').onclick = () => showSeries();
+$('ask-form').onsubmit = async event => {
+  event.preventDefault();
+  const question = $('ask-input').value.trim();
+  if (!question) return;
+  $('ask-button').disabled = true; $('ask-answer').textContent = 'Thinking…';
+  try {
+    const reply = await api('/api/chat', {method: 'POST', body: JSON.stringify({question})});
+    $('ask-answer').textContent = reply.answer;
+    if (reply.place) {
+      choosePlace(reply.place, false);
+      $('series-whole').click();
+      if (reply.start) $('series-start').value = reply.start;
+      if (reply.end) $('series-end').value = reply.end;
+      $('series-filter').value = '';
+      refreshSteps();
+      seriesChoice = reply.variable;
+      showSeries(reply.variable);
+    } else if (reply.variable) showTrends(reply.variable, reply.unit);
+  } catch (error) { $('ask-answer').textContent = error.message; }
+  $('ask-button').disabled = false;
+};
 $('explore-form').addEventListener('submit', event => {
   if (document.body.dataset.mode !== 'series') return;
   event.preventDefault(); event.stopImmediatePropagation(); showSeries();

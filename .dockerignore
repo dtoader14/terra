@@ -7,8 +7,9 @@
 !series.py
 !sources.py
 !fetching.py
+!chat.py
 !variables.csv
-!prediction.csv
 !places.tsv
+!trends.csv
 !static/
 !static/**
