@@ -76,8 +76,7 @@ function updateService(provider){
   $('service-note').textContent=provider.message;
   if(!activeJob) setStatus(provider.available?'Ready to explore':'Plan your exploration',provider.message);
 }
-$('about-button').onclick=()=>$('about-dialog').showModal();
-$('method-button').onclick=()=>$('about-dialog').showModal();
+$('empty-close').onclick=()=>$('empty-card').classList.add('closed');
 document.querySelectorAll('[data-close]').forEach(button=>button.onclick=()=>button.closest('dialog').close());
 let heatVariables=[],heatTotal=0,heatChoice=null,heatReason='',heatRun=0;
 function updateVariable(){
